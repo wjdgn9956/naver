@@ -13,12 +13,14 @@ const member = {
      * 처리할 데이터
      */
     params : {},
+    session : {},
     /**
      * 처리할 데이터 설정
      * 
      */
-    data :function(params) {
+    data :function(params, session) {
         this.params = params;
+        this.session = session;
         return this;
     },
     /**
@@ -28,10 +30,17 @@ const member = {
     join : async function() {
         try{
         const data = this.params;
-        const snsType = 'none';
-        const snsId = "";
-        const hash = await bcrypt.hash(data.memPw, 10);
+        const session = this.session;
 
+        let snsType = 'none';
+        let snsId = "", hash = "";
+        if (session.naverProfile) {
+            snsType = 'naver';
+            snsId = session.naverProfile.id;
+
+        } else {
+        hash = await bcrypt.hash(data.memPw, 10);
+        }
         const sql = `INSERT INTO member (memId, memPw, memNm, email, cellPhone, snsType, snsId)
                         VALUES (:memId, :memPw, :memNm, :email, :cellPhone, :snsType, :snsId)`;
         
