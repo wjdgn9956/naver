@@ -8,10 +8,12 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const logger = require("./lib/logger");
 const { sequelize } = require("./models");
-
+const  { mainMenu } = require("./middlewares/main_menu"); // 메인 메뉴
+const { loginSession } = require("./middlewares/login_session"); // 로그인 세션 처리
 
 /** 라우터 */
-const indexRouter = require("./routes");
+const indexRouter = require("./routes"); // 메인 페이지
+const memberRouter = require("./routes/member"); // 회원 페이지 라우터 
 
 
 dotenv.config();
@@ -60,14 +62,47 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended : false}));
 
+app.use(loginSession);
+app.use(mainMenu);// 메인 메뉴
+
+
+
 
 /** 공통 라우터 */
 app.use((req, res, next) => {
-    console.log(req.url);
+    /** body 클래스 자동 완성 (url 기준) */
+
+    let url = req.url;
+    let end = url.indexOf("?");
+    if (end !== -1) {
+    url = url.slice(0,end+1);
+    }
+    end = url.indexOf("#");
+    if (end !== -1) {
+        url = url.slice(0, end);
+    }
+
+    let addClass = "";
+    if (url == "/") addClass = "main";
+    else {
+        url = url.split("/");
+        if (url.length > 2) {
+            addClass = url[1] + "_" + url[2];
+        } else {
+            addClass = url[1];
+        }
+        
+    }
+
+    res.locals.bodyClass = addClass;
+
     next();
 })
 
-app.use(indexRouter);
+/** 라우터 등록 */
+app.use(indexRouter); // 메인 페이지
+app.use("/member", memberRouter); // 회원 페이지 
+
 
 // 없는 페이지 처리 
 app.use((req, res, next) => {
