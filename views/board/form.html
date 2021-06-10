@@ -1,0 +1,6 @@
+{% extends '../layout.html' %}
+{% block content %}
+<form name='frmBoard' method='post' action='/board/{{ config.id }}' target='ifrmHidden' autocomplete='off'>
+{% include config.skinPath.form %}
+</form>
+{% endblock %}

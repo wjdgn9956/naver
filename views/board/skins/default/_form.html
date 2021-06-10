@@ -1,0 +1,24 @@
+<div class='board_default form'>
+	<dl>
+		<dt>제목</dt>
+		<dd>
+			<input type='text' name='subject' value='{{ subject }}'>
+		</dd>
+	</dl>
+	<dl>
+		<dt>작성자</dt>
+		<dd>
+			<input type='text' name='poster' value='{% if poster %}{{ poster }}{% else %}{{ member.memNm }}{% endif %}'>
+		</dd>
+	</dl>
+	{% if not isLogin %}
+	<dl>
+		<dt>비밀번호</dt>
+		<dd>
+			<input type='text' name='password' placeholder='게시글 수정, 삭제 비밀번호'>
+		</dd>
+	</dl>
+	{% endif %}
+	<textarea name='contents' id='content'>{{ contents | safe }}</textarea>
+</div>
+<!--// board_default -->
