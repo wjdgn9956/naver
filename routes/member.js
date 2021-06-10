@@ -1,12 +1,11 @@
 const { joinValidator } = require('../middlewares/join_validator');
 const { loginValidator } = require('../middlewares/login_validator');
-const { memberOnly, guestOnly}  = require("../middlewares/member_only");
+const { memberOnly, guestOnly } = require('../middlewares/member_only');
 const member = require("../models/member"); // Member Model
 const naverLogin = require('../models/naver_login'); // 네이버 로그인
 const { alert, go } = require('../lib/common');
 const express = require('express');
 const router = express.Router();
-
 
 /** /member/join  */
 router.route("/join")

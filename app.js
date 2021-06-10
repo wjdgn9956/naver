@@ -11,10 +11,14 @@ const { sequelize } = require("./models");
 const  { mainMenu } = require("./middlewares/main_menu"); // 메인 메뉴
 const { loginSession } = require("./middlewares/login_session"); // 로그인 세션 처리
 
-/** 라우터 */
+/** front 라우터 */
 const indexRouter = require("./routes"); // 메인 페이지
 const memberRouter = require("./routes/member"); // 회원 페이지 라우터 
 
+/** admin 라우터  */
+const adminRouter = require("./routes/admin"); // 관리자 메인 페이지
+const adminMemberRouter = require("./routes/admin/member"); // 회원
+const adminBoardRouter = require("./routes/admin/board"); // 게시판 관리
 
 dotenv.config();
 
@@ -99,10 +103,14 @@ app.use((req, res, next) => {
     next();
 })
 
-/** 라우터 등록 */
+/** Front 라우터 등록 */
 app.use(indexRouter); // 메인 페이지
 app.use("/member", memberRouter); // 회원 페이지 
 
+/** Admin 라우터 등록  */
+app.use("/admin", adminRouter); // 관리자 메인
+app.use("/admin/member", adminMemberRouter); // 회원 관리
+app.use("/admin/board", adminBoardRouter); // 게시판 관리
 
 // 없는 페이지 처리 
 app.use((req, res, next) => {

@@ -8,8 +8,8 @@ const logger = require('../lib/logger');
 *
 */
 const naverLogin = {
-	clientId : 'P78Vj1Hp_UBEisn_PtLq',
-	secret : 'gUFQ5V8mFP',
+	clientId : 'LyU5XcQikaVxFctdIr4b',
+	secret : 'tcNZETrL8L',
 	redirectUri : 'http://code-factory.co.kr:3000/member/login_callback',
 	
 	/** 
@@ -112,42 +112,42 @@ const naverLogin = {
 		
 		return isExists;
 	},
-
-    /**
-     * 네이버 로그인 처리
-     * 
-     */
-    login : async function(req, res) {
-        /**
-         * snsType - naver
-         * req.session.naverProfile.id -> snsId
-         */
-        if (!req.session.naverProfile)
-            return false;
-
-        try {
-            const sql = `SELECT * FROM member WHERE snsType = 'naver' AND snsId = ?`;
-            const rows = await sequelize.query(sql,{
-                replacements: [req.session.naverProfile.id], 
-                type: QueryTypes.SELECT,
-            });
-
-            if (rows.length == 0) {
-                throw new Error("네이버 로그인 - 존재하지 않는 snsid");
-            }
-
-            /** 로그인 처리 */
-            req.session.memId = rows[0].memId;
-
-            /** 세션 삭제 */
-            delete req.session.naverProfile;
-
-
-        } catch(err) {
-            logger(err.stack, 'error');
-            return false; 
-        }
-    },
+	/**
+	* 네이버 로그인 처리 
+	*
+	*/
+	login : async function(req, res) {
+		/**
+		snsType - naver 
+		 req.session.naverProfile.id --  snsId 
+		*/
+		if (!req.session.naverProfile)
+			return false;
+		
+		try {
+			const sql = "SELECT * FROM member WHERE snsType='naver' AND snsId = ?";
+			const rows = await sequelize.query(sql, {
+					replacements : [req.session.naverProfile.id],
+					type : QueryTypes.SELECT,
+			});
+			
+			if (rows.length == 0) {
+				throw new Error('네이버 로그인 - 존재하지 않는 snsId');
+			}
+				
+			/** 로그인 처리 */
+			req.session.memId = rows[0].memId;
+			
+			/** 세션 삭제 */
+			delete req.session.naverProfile;
+			
+			return true;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+		
+	},
 };
 
 module.exports = naverLogin;

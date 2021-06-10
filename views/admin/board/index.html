@@ -1,0 +1,19 @@
+{% extends "../layout.html" %}  
+{% block content %}  
+<div class="mtitle">게시판 등록</div>
+<form method = "post" action="/admin/board" target= "ifrmHidden" autocomplete="off">
+    <table class="table_cols">
+        <tr>
+            <th>아이디</th>
+            <td>
+                <input type="text" name ="id">
+            </td>
+            <th>게시판명</th>
+            <td>
+                <input type="text" name = "boardNm">
+            </td>
+        </tr>
+    </table>
+    <input type="submit" value ="게시판 생성하기" class="submit_btn">
+</form>
+{% endblock %}  
