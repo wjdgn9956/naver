@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
+* { font-family: 'Nanum Gothic', sans-serif; box-sizing: border-box; outline:none;}
+html { font-size: 12px; color : #212121;}
+body { padding:0; margin: 0;}
+ul { list-style: none; padding: 0; margin: 0;}
+dl { display: table; width:100%; padding:0; margin:0;}
+dt { display: table-cell; vertical-align: middle;}
+dd { display: table-cell; vertical-align: middle;}
+
+
+input[type='text'],
+input[type='number'],
+input[type='password'],
+input[type='email'] {
+    width: 100%; height: 40px; border:1px solid #d5d5d5; border-radius: 5px; padding: 0 10px;
+}
+
+a{ text-decoration: none; color:#212121;}
+
+#main_wrap { padding: 10px; }
+
+/** 버튼 공통 */
+.submit_btn { background-color: black; color: #ffffff; height:45px; width: 250px; display: block;
+margin: 20px auto; border:0; border-radius: 7px; cursor: pointer;}
+
+.btn1, .btn2 { background-color: red; color:#ffffff; padding:5px 15px; font-size: 12px; cursor: pointer;
+border-radius: 3px; border:0;}
+.btn2 { background-color: orange; color:#212121;}

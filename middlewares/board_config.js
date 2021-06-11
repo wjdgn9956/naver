@@ -13,11 +13,13 @@ module.exports.boardConfig = async (req, res, next) => {
 			}
 			
 			const config = await board.getBoard(id);
-			if (!config) {
+			if (!config.id) {
 				throw new Error('존재하지 않는 게시판 입니다.');
 			}
 			
 			req.boardConfig = config;
+			
+			req.body.id = id;
 			
 		} catch (err) {
 			return alert(err.message, res, -1);

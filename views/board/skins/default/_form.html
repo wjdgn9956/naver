@@ -15,10 +15,11 @@
 	<dl>
 		<dt>비밀번호</dt>
 		<dd>
-			<input type='text' name='password' placeholder='게시글 수정, 삭제 비밀번호'>
+			<input type='password' name='password' placeholder='게시글 수정, 삭제 비밀번호'>
 		</dd>
 	</dl>
 	{% endif %}
-	<textarea name='contents' id='content'>{{ contents | safe }}</textarea>
+	<textarea name='contents' id='contents'>{{ contents | safe }}</textarea>
+	<input type='submit' value='작성하기' class='submit_btn'>
 </div>
 <!--// board_default -->
