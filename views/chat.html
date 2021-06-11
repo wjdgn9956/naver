@@ -1,0 +1,29 @@
+{% extends "layout.html" %}  
+
+
+{% block script %}
+ <script src ="/js/chat.js"></script>
+{% endblock %}  
+{% block style %}  
+    <link rel="stylesheet" href="/css/chat.css">
+{% endblock %}
+
+
+{% block content %}  
+<form id ="form" method = "get" action="/chat/room" autocomplete="off">
+    <div class="title_chat">서로에게 맞는 여행 메이트를 찾아보세요!</div>
+    <dl>
+        <dt>방이름</dt>
+        <dd>
+            <input type="text" name ="room" placeholder="나라명으로 입력해주세요 ex)호주, 베트남, 필리핀">
+        </dd>
+    </dl>
+    <dl>
+        <dt>닉네임</dt>
+        <dd>
+            <input type="text" name ="userNm" placeholder="닉네임을 만들어주세요">
+        </dd>
+    </dl>
+    <input type="submit" value ="입장하기" class ="btn">
+</form>
+{% endblock %}

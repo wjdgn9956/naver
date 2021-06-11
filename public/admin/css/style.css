@@ -46,4 +46,5 @@ textarea { border: 1px solid #d5d5d5; min-height: 150px; resize: none; border-ra
 .main_menu li a { display: block; padding: 13px 20px; font-size: 15px; font-weight: bold; }
 .main_menu:after { clear: left; content: ''; display: block; }
 .main_menu li a:hover,
-.main_menu li.on a { background-color: orange; }
+.main_menu li.on a { background-color: lightblue; }
+

@@ -10,6 +10,13 @@ const logger = require('./lib/logger');
 const { sequelize } = require('./models');
 const { mainMenu } = require('./middlewares/main_menu'); // 메인 메뉴 
 const { loginSession } = require('./middlewares/login_session'); // 로그인 세션 처리 
+const chat = require("./middlewares/chat");
+const app = express();
+
+
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+chat(io); // 채팅 미들웨어
 
 /** front 라우터 */
 const indexRouter = require('./routes'); // 메인 페이지 
@@ -24,7 +31,7 @@ const adminBoardRouter = require('./routes/admin/board'); // 게시판관리
 
 dotenv.config();
 
-const app = express();
+
 
 app.set('port', process.env.PORT || 3000);
 app.set('view engine', 'html');
@@ -112,6 +119,19 @@ app.use("/admin", adminRouter); // 관리자 메인
 app.use("/admin/member", adminMemberRouter); // 회원 관리
 app.use("/admin/board", adminBoardRouter); // 게시판 관리 
 
+/** 채팅방 입장 라우터 */
+app.get("/chat", (req, res, next) => {
+	res.render("chat");
+})
+
+app.get("/chat/room", (req, res, next) => {
+	
+	if (!req.query.room || !req.query.userNm) {
+		return res.send("<script>alert('방 이름과 닉네임을 모두 입력하세요');history.back();</script>");
+	}
+	return res.render("chat_room");
+})
+
 // 없는 페이지 처리 
 app.use((req, res, next) => {
 	const error = new Error(`${req.method} ${req.url}는 없는 페이지 입니다.`);
@@ -131,6 +151,6 @@ app.use((err, req, res, next) => { // 오류처리 미들웨어
 	res.status(err.status).render("error");
 });
 
-app.listen(app.get('port'), () => {
+server.listen(app.get('port'), () => {
 	console.log(app.get('port'), '번 포트에서 대기 중');
 });

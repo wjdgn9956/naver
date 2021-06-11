@@ -1,0 +1,38 @@
+* { box-sizing: border-box;}
+html { font-size: 13px;}
+body { padding:0; margin:0;}
+
+ul { list-style: none; margin:0; padding:0;}
+
+.chat { width:400px; margin:100px auto;}
+.chat .contents { border:1px solid #212121; height:400px; overflow-y: auto; background-color: #f8f8f8;
+border-radius: 5px; list-style: none; margin:0 0 10px; padding:0;}
+.chat input[type="text"] { border: 1px solid #212121; height: 40px; border-radius: 5px;
+padding:0 10px; width: 100%;}
+
+.chat li { padding: 7px; margin:10px; border-bottom: 1px dashed #d5d5d5; font-size:12px;}
+.chat li.other { text-align: right;}
+
+.chat .userNm { font-size: 11px; color : #ffffff; background-color: pink; padding:4px 10px; 
+border-radius: 5px;}
+
+.chat li.other .userNm { background-color: orange;}
+.btn { background-color: #d5d5d5; color:black; border:1px solid #d5d5d5;
+width:100px; height: 40px; border-radius: 5px; cursor: pointer; margin:0 auto; display: block;}
+
+.btn:hover { color:white; background-color: black;}
+.title_chat { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 30px; }
+#form { width: 500px; margin: 100px auto; border :3px solid #d5d5d5; 
+padding: 40px; }
+
+.roomNm { margin-bottom:3px; color:black; font-weight: 600;}
+h1{ text-align: center;}
+
+.chat #word:hover {background-color: #dedcd7;}
+.chat .exit  { color: black;  display:block; width:100px; background-color: #dedcd7; text-align: center;
+margin:0 auto; height:30px; line-height: 30px; border-radius: 5px;}
+.chat .exit:hover{ background-color: black; color:white;}
+
+/* 사진 추가 아이콘 */
+.xi-image-o { font-size: 30px; cursor: pointer;}
+

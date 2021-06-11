@@ -1,0 +1,35 @@
+{% extends "layout.html" %} 
+
+
+{% block style %}  
+<link rel="stylesheet" href="/css/chat.css">
+{% endblock %}
+
+{% block script %}
+ <script src ="/js/chat.js"></script>
+{% endblock %}  
+
+{% block content %}
+
+<div class="chat">
+    <h1>욕설과 심한 비방은 자제해주세요!</h1>
+    <ul class= "contents">
+
+    </ul>
+    <div class="chat_box">
+        <input type="text" id ="word" placeholder="메세지를 입력해보세요~">
+    </div>
+    <i class ="xi-image-o" class="upload_photo"></i>
+    <a href="/" class ="exit">퇴장하기</a>
+</div>
+
+<script type ="text/html" id ="chat_template">
+   
+    <li class = '<%=addClass%>'>
+      <div class ="roomNm"><%=room%></div>
+      <span class ="userNm"><%=userNm%></span>
+      <span class ="message"><%=message%></span>
+      
+    </li>
+</script>
+{% endblock %}  
