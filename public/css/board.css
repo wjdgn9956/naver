@@ -1,7 +1,7 @@
 /* default/_form.html */
 .board_default dl { margin-bottom: 5px;}
 .board_default dt {width: 120px;}
-
+.board_default { padding:15px;}
 
 
 /** default/_view.html */

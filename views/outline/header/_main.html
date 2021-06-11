@@ -1,1 +1,18 @@
-<h1>상단 공통</h1>
+<div class="nav">
+    <div class="box logo">
+       <a href="/"><i class ="xi-hotel"></i> YOONSHOTEL</i></a>
+    </div>
+      
+      <div class="box info">
+   {% if isLogin %} 
+   {{ member.memId}}님 로그인..
+   <a href="/board/list"><i class="xi-paper-o"></i>게시판</a>
+   <a href="/member/mypage"><i class ="xi-home"></i>마이페이지</a>
+   <a href="/member/logout"><i class ="xi-log-out"></i>로그아웃</a>
+   {% else %}
+   <a href="/member/login"><i class ="xi-log-in"></i>로그인</a>
+   <a href="/member/join"><i class ="xi-log-out"></i>회원가입</a>
+       
+   {% endif %} 
+   </div>
+   </div>

@@ -1,2 +1,37 @@
 {% extends "../layout.html" %}  
 
+{% block script %}  
+<script src ="/js/common.js"></script>
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+{% endblock %}  
+
+{% block style %}  
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
+{% endblock %}  
+
+
+{% block content %}  
+
+<!-- swiper 영역 S -->
+<section class="swiper">
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide banner">
+              <img src="img/hotel1.jpg" alt="">
+          </div>
+          <div class="swiper-slide banner">
+            <img src="img/hotel2.jpg" alt="">
+          </div>
+          <div class="swiper-slide banner">
+            <img src="img/hotel3.jpg" alt="">
+          </div>
+        </div>
+        <!-- Add Arrows -->
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+ </section>
+  <!-- swiper 영역 E -->
+
+{% endblock %}  
