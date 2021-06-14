@@ -196,4 +196,9 @@ router.route("/password/:idx")
 			}
 		});
 
+router.get("/", (req, res, next) => {
+	
+	return res.render("board/main")
+})		
+
 module.exports = router;
