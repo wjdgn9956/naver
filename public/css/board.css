@@ -39,16 +39,26 @@ text-overflow: ellipsis; white-space: nowrap; overflow: hidden;}
 
 
 /* board_main  메인 영역*/
-.board_main { margin-top: 100px;}
-.board_main .box { float:left; width: calc( 100%/ 5);}
+.board_main { margin-top: 100px; }
+.board_main .box {float:left; width: calc( 100%/ 5);}
 .board_main:after{clear:left; content: ""; display: block;}
 
 
 .board_main .box .inner{
+    width:230px;
+    height: 300px;
     overflow: hidden;
 }
-.board_main .box img { width: 100%; height:300px; display: block; transition: 1.3s;}
-.board_main .box img:hover {
+.board_main .box .inner img{
+    width: 230px;
+    height: 300px;
+    transition: all 1.3s;
+}
+.board_main .box .inner:first-child{
+    margin-left:20px;
+}
+.board_main .box img { width: 100%;  display: block; }
+.board_main .box .inner img:hover {
     transform:scale(1.2);
 }
-.board_main .title { font-size: 17px; font-weight: 500px; margin-top: 10px;}
+.board_main .title { text-align: center; font-size:17px; margin-top:20px; font-weight: 16px; }
