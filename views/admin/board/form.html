@@ -44,6 +44,21 @@
 			</td>
 		</tr>
 		<tr>
+			<th>페이지당 레코드수</th>
+			<td>
+				<input type='number' name='rowsPerPage' value='{{ rowsPerPage }}'>
+			</td>
+		</tr>
+		<tr>
+			<th>기타</th>
+			<td>
+				<input type='checkbox' name='useViewList' value='1' id='useViewList'{{ ' checked' if useViewList }}>
+				<label for='useViewList'>글 보기 하단 게시글 목록 노출</label>&nbsp;&nbsp;
+				<input type='checkbox' name='useComment' value='1' id='useComment'{{ ' checked' if useComment }}>
+				<label for='useComment'>댓글 사용</label>
+			</td>
+		</tr>
+		<tr>
 			<th>스킨</th>
 			<td>
 				<select name='skin'>

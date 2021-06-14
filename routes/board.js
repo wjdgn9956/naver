@@ -4,9 +4,10 @@
 */
 const board = require('../models/board');
 const { boardConfig } = require('../middlewares/board_config');
-const { writeValidator } = require('../middlewares/board_validator');
+const { writeValidator, permissionCheck, guestOnly } = require('../middlewares/board_validator');
 const { alert, go } = require('../lib/common');
 const express = require('express');
+const bcrypt = require('bcrypt');
 const router = express.Router();
 
 
@@ -19,6 +20,7 @@ router.route('/:id')
 				addScript : ['board'],
 				addCss : ['board'],
 			};
+			
 			return res.render('board/form', data);
 		})
 		/** 작성 처리 - id (게시판 아이디) */
@@ -35,18 +37,63 @@ router.route('/:id')
 			return go("/board/view/" + idx, res, "parent");
 		})
 		/** 수정 - id (게시글 번호) */
-		.patch((req, res, next) => {
-			
+		.patch(boardConfig, writeValidator, async (req, res, next) => {
+			const result = await board.data(req.body, req.session)
+												.update();
+			if (result) { // 게시글 작성 성공시 -> 게시글 보기 페이지 이동 
+				return go("/board/view/" + req.body.idx, res, "parent");
+			}
+		
+			// 실패시 실패 메세지
+			return alert('게시글 수정 실패하였습니다', res);
 		})
 		/** 삭제 - id (게시글 번호) */
-		.delete((req, res, next) => {
-			
+		.delete(permissionCheck, async (req, res, next) => {
+			try {
+				const idx = req.params.id;
+				const data = await board.get(idx);
+				if (!data.idx) {
+					throw new Error('존재하지 않는 게시글 입니다.');
+				}
+				
+				const result = await board.delete(idx);
+				if (!result) { // 게시글 삭제 실패 
+					throw new Error('게시글 삭제 실패하였습니다');
+				}
+				
+				return res.json({erorr : false, message : "게시글 삭제 되었습니다.", boardId : data.id });
+				
+			} catch (err) {
+				return res.json({ error : true, message : err.message });
+			}
 		});
 
 
 /** 게시글 목록 */
 router.get("/list/:id", boardConfig, async (req, res, next) => {
-	const data = { config : req.boardConfig };
+
+	const id = req.params.id;
+	/** 검색 처리 S */
+	const where = {
+		binds : [],
+		params : {},
+	};
+	
+	let category = "";
+	if (req.query.category) {
+		where.binds.push("a.category = :category");
+		category = where.params.category = req.query.category;
+	}
+	/** 검색 처리 E */
+	
+	const data = await board
+								.addWhere(where)
+								.getList(id, req.query.page, 20, req.query);
+								
+	data.config = req.boardConfig;
+	data.addCss = ['board'];
+	data.category = category;
+	
 	return res.render('board/list', data);
 });	
 
@@ -68,37 +115,85 @@ router.get("/view/:idx", async (req, res, next) => {
 	} catch (err) {
 		return alert(err.message, res, -1);
 	}
-
+	
 	data.addCss = ["board"];
+	data.addScript = ["board"];
 	
 	return res.render("board/view", data);
 });
 
 /** 게시글 수정 */
-
-router.get("/update/:idx", async (req, res, next) => {
-	
+router.get("/update/:idx", permissionCheck, async (req, res, next) => {
 	try {
 		const idx = req.params.idx;
 		if (!idx) {
-			throw new Error("잘못된 접근입니다.");
+			throw new Error('잘못된 접근입니다.');
 		}
-
+		
 		const data = await board.get(idx);
 		if (!data.idx) {
-			throw new Error("존재하지 않는 게시글입니다.");
+			throw new Error('존재하지 않는 게시글 입니다.');
 		}
+		
 		data.addCss = ['board'];
 		data.addScript = ['board'];
 		
 		return res.render("board/form", data);
-
+		
 	} catch(err) {
 		return alert(err.message, res, -1);
 	}
-	
 });
 
-
+/** 비회원 게시글 수정, 삭제 비밀번호 확인 */
+router.route("/password/:idx")
+		/** 비밀번호 확인 양식 */
+		.get(guestOnly, (req, res, next) => {
+			const data = {
+					idx : req.params.idx,
+					addCss : ['board'],
+			};
+			return res.render("board/password", data);
+		})
+		/** 비밀번호 확인 처리 */
+		.post(async (req, res, next) => {
+			try {
+				const idx = req.params.idx;
+				const password = req.body.password;
+				if (!idx) {
+					throw new Error('잘못된 접근입니다.');
+				}
+				
+				if (!password) {
+					throw new Error('비밀번호를 입력하세요.');
+				}
+				
+				const data = await board.get(idx);
+				if (!data.idx) {
+					throw new Error('존재하지 않는 게시글 입니다.');
+				}
+			
+				const match = await bcrypt.compare(password, data.password);
+				if (match) { // 비회원 비밀번호 일치 
+					const key = `board_${data.boardId}_${idx}`;
+					const keyUrl = key + "_url";
+					req.session[key] = true;
+					if (req.session[keyUrl]) {
+						if (req.session[keyUrl].indexOf("delete")) { // 게시글 삭제인 경우 바로 삭제 -> 목록 이동 
+							await board.delete(idx);
+						} else {
+							return go(req.session[keyUrl], res, "parent");
+						}
+					}
+					
+					return go("/board/list/" + data.boardId, res, "parent");
+					
+				} else { // 비회원 비밀번호 불일치
+					return alert('비밀번호가 일치하지 않습니다.', res);
+				}
+			} catch (err) {
+				return alert(err.message, res);
+			}
+		});
 
 module.exports = router;

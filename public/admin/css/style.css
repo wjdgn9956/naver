@@ -40,6 +40,13 @@ textarea { border: 1px solid #d5d5d5; min-height: 150px; resize: none; border-ra
 .btn2 { background-color: red; }
 
 
+@media (max-width:700px) {
+    .btn1 { width:80px; margin-bottom: 5px;}
+    .btn2 { width:80px;}
+}
+
+
+
 /** outline/header/_main.html */
 .main_menu { background-color: #d5d5d5; }
 .main_menu li { float: left; }
