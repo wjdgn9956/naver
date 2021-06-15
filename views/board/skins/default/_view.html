@@ -11,24 +11,24 @@
 	</div>
 	<div class='btns'>
 		<a href='/board/{{ id }}' class='btn1'>글 쓰기</a>
-		{% if isWritable %}  
+		{% if isWritable %}
 		<a href='/board/update/{{ idx }}' class='btn1'>글 수정</a>
-		{% endif %}  
-		{% if isDeletable %}  
+		{% endif %}
+		{% if isDeletable %}
 		<span class='btn1 post_delete' data-idx='{{ idx }}'>글 삭제</span>
-		{% endif %}  
+		{% endif %}
 		<a href='/board/list/{{ id }}' class='btn1'>글 목록</a>
 	</div>
 </div>
 <!--// board_default -->
 
-{% if config.useComment %}  
-{% include config.skinPath.comment %}  
-{% endif %}   
+{% if config.useComment %} 
+{% include config.skinPath.comment %}
+{% endif %}
 
-{% if list.length > 0 %}  
-<div class="post_list_bottom">
+
+{% if list.length > 0 %}
+<div class='post_list_bottom'>
 {% include config.skinPath.list %}
-</div>  
-
-{% endif %}  
+</div>
+{% endif %}
