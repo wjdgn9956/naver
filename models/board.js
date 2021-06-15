@@ -98,6 +98,8 @@ const board = {
 					list : skinPath + "/_list.html",
 					form : skinPath + "/_form.html",
 					view : skinPath + "/_view.html",
+					comment : skinPath + "/_comment.html",
+					commentForm : skinPath + "/_comment_form.html",
 				};
 			}
 			
@@ -305,7 +307,7 @@ const board = {
 	* @param Integer idx 게시글 번호 
 	* @return Object
 	*/
-	get : async function(idx) {
+	get : async function(idx, req) {
 		try {
 			const sql = `SELECT a.*, b.memId, b.memNm FROM boarddata AS a 
 										LEFT JOIN member AS b ON a.memNo = b.memNo 
@@ -324,6 +326,11 @@ const board = {
 				data.config = await this.getBoard(data.boardId);
 				const date = parseDate(data.regDt);
 				data.regDt = date.datetime;
+				
+				data.isWritable = data.isDeletable = true;
+				if (req && req.isLogin && req.session.memNo != data.memNo) {
+					data.isWritable = data.isDeletable = false;
+				}
 			}
 			
 			return data;
@@ -364,7 +371,7 @@ const board = {
 		};
 		
 		let addWhere = "";
-		if (this._addWhere.binds.length > 0) { // 추가 검색 조건이 있는 경우 
+		if (this._addWhere.binds && this._addWhere.binds.length > 0) { // 추가 검색 조건이 있는 경우 
 			addWhere = " AND " + this._addWhere.binds.join(" AND ");
 			
 			if (this._addWhere.params) {
@@ -411,6 +418,164 @@ const board = {
 		};
 
 		return result;
+	},
+	/**
+	* 댓글 작성 
+	*
+	* @return Integer|Boolean 작성 성공시 -> 등록번호(idx), 실패시에는 false
+	*/
+	writeComment : async function() {
+		try {
+			const memNo = this.session.memNo || 0;
+			let hash = "";
+			if (!memNo && this.params.password) {
+				hash = await bcrypt.hash(this.params.password, 10);
+			}
+			
+			const sql = `INSERT INTO boardcomment (idxBoard, memNo, poster, password, comment)
+									VALUES (:idxBoard, :memNo, :poster, :password, :comment)`;
+			
+			const replacements = {
+				idxBoard : this.params.idxBoard,
+				memNo,
+				poster : this.params.poster,
+				password : hash,
+				comment : this.params.comment,
+			};
+			
+			const result = await sequelize.query(sql, {
+				replacements,
+				type : QueryTypes.INSERT,
+			});
+			
+			return result[0];
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 댓글 수정 
+	*
+	* @return Boolean
+	*/
+	updateComment : async function() {
+		try {
+			const data = await this.getComment(this.params.idx);
+			if (!data.idx) {
+				throw new Error('댓글이 존재하지 않습니다.');
+			}
+			
+			let hash = "";
+			if (!data.memNo && this.params.password) {
+				hash = await bcrypt.hash(this.params.password, 10);
+			}
+			
+			const sql = `UPDATE boardcomment
+									SET 
+										poster = :poster,
+										password = :password,
+										comment = :comment
+								WHERE 
+										idx = :idx`;
+			
+			const replacements = {
+				poster : this.params.poster,
+				password : hash,
+				comment : this.params.comment,
+				idx : this.params.idx,
+			};
+			await sequelize.query(sql, {
+				replacements, 
+				type : QueryTypes.UPDATE,
+			});
+			
+			return true;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 게시글별 댓글 목록 
+	*
+	* @param Integer idxBoard 게시글 번호 
+	* @return Array
+	*/
+	getComments : async function(idxBoard, req) {
+		try {
+			const sql = `SELECT a.*, b.memNm, b.memId FROM boardcomment AS a 
+									LEFT JOIN member AS b ON a.memNo = b.memNo 
+								WHERE idxBoard = ?`;
+			
+			const rows = await sequelize.query(sql, {
+				replacements : [idxBoard],
+				type : QueryTypes.SELECT,
+			});
+			
+			rows.forEach((v, i, _rows) => {
+				_rows[i].regDt = parseDate(v.regDt).datetime;
+				_rows[i].commentHtml = v.comment.replace(/\r\n/g, "<br>");
+				
+				_rows[i].isWriable = _rows[i].isDeletable = true;
+				if (req && req.isLogin && req.session.memNo != v.memNo) {
+					_rows[i].isWriable = _rows[i].isDeletable  = false;
+				}
+			});
+			
+			return rows;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return [];
+		}
+	},
+	/**
+	* 댓글 조회 
+	* 
+	* @param Integer idx 댓글 등록번호
+	* @return Object
+	*/
+	getComment : async function(idx) {
+		try {
+			const sql = `SELECT a.*, b.memNm, b.memId, c.boardId FROM boardcomment AS a 
+									INNER JOIN boarddata as c ON a.idxBoard = c.idx 
+									LEFT JOIN member AS b ON a.memNo = b.memNo 
+								WHERE a.idx = ?`;
+			const rows = await sequelize.query(sql, {
+				replacements : [idx],
+				type : QueryTypes.SELECT,
+			});
+			
+			const data = rows[0] || {};
+			if (data.idx) {
+				data.config = await this.getBoard(data.boardId);
+			}
+					
+			return data;
+		} catch(err) {
+			logger(err.stack, 'error');
+			return {};
+		}
+	},
+	/**
+	* 댓글 삭제 
+	*
+	* @param Integer idx 댓글 등록번호
+	* @return Boolean 
+	*/
+	deleteComment : async function(idx) {
+		try {
+			const sql = 'DELETE FROM boardcomment WHERE idx = ?';
+			await sequelize.query(sql, {
+				replacements : [idx],
+				type : QueryTypes.DELETE,
+			});
+			
+			return true;
+		} catch(err) {
+			logger(err.stack, 'error');
+			return false;
+		}
 	},
 };
 

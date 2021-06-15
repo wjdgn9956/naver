@@ -119,7 +119,7 @@ app.use("/admin", adminRouter); // 관리자 메인
 app.use("/admin/member", adminMemberRouter); // 회원 관리
 app.use("/admin/board", adminBoardRouter); // 게시판 관리 
 
-/** 채팅방 입장 라우터 */
+/** 채팅방 입장 라우터 S*/
 app.get("/chat", (req, res, next) => {
 	res.render("chat");
 })
@@ -131,6 +131,8 @@ app.get("/chat/room", (req, res, next) => {
 	}
 	return res.render("chat_room");
 })
+
+/** 채팅방 입장 라우터 E*/
 
 // 없는 페이지 처리 
 app.use((req, res, next) => {

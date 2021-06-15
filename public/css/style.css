@@ -35,6 +35,10 @@ border-radius: 3px; border:0;}
 border-radius: 3px; margin: 0 2px;}
 .paginator a.paginator-current { background-color: #212121; color:#ffffff;}
 
+/*  팝업 공통*/
+.popup_tit { font-size: 17px; font-weight: bold; padding-bottom: 10px; margin-bottom: 20px;
+border-bottom: 1px solid #212121;}
+
 /* 메인 헤더 공통 */
 .nav  {  background-color: 
     #dedcd7; padding : 10px;}
