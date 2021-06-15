@@ -14,7 +14,7 @@ module.exports.boardConfig = async (req, res, next) => {
 			
 			const config = await board.getBoard(id);
 			if (!config.id) {
-				throw new Error('존재하지 않는 게시판 입니다.');
+				throw new Error('삭제 권한이 없습니다.');
 			}
 			
 			req.boardConfig = config;

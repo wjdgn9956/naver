@@ -517,7 +517,7 @@ const board = {
 				_rows[i].regDt = parseDate(v.regDt).datetime;
 				_rows[i].commentHtml = v.comment.replace(/\r\n/g, "<br>");
 				
-				_rows[i].isWriable = _rows[i].isDeletable = true;
+				_rows[i].isWritable = _rows[i].isDeletable = true;
 				if (req && req.isLogin && req.session.memNo != v.memNo) {
 					_rows[i].isWriable = _rows[i].isDeletable  = false;
 				}
