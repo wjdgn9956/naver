@@ -113,6 +113,39 @@ const member = {
             logger(err.stack, 'error');
             return {};
         }
+    },
+
+    /**
+     * 
+     * 회원정보 수정
+     * 
+     */
+    update : async function() {
+        try {
+            const data = this.params;
+            const sql = `UPDATE member
+                         SET
+                         memNm = :memNm,
+                         email = :email,
+                         cellPhone = :cellPhone
+                         address = :address
+                         WHERE
+                             idx = :idx`;
+            const replacements = {
+                memNm : data.memId,
+                email : data.email,
+                cellPhone : data.cellPhone,
+                address : data.address,
+            }                
+            result = await sequelize.query(sql, {
+                replacements,
+                type:QueryTypes.UPDATE,
+            })            
+            return true;     
+        } catch(err) {
+            logger(err.stack, 'error')
+            return false;
+        }
     }
 };
 

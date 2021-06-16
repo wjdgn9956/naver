@@ -66,6 +66,19 @@ router.get('/logout', (req, res, next) => {
 	return res.redirect("/member/login");
 });
 
+router.route("/update")
+	  .get((req, res, next) => {
+
+		return res.render("member/form");
+	  })
+	  .patch(async (req, res, next) => {
+		 const result = await member.data(req.body).update();
+		 if (result) {
+			return go("/", res, "parent");
+		 }
+		 	return alert("회원수정에 실패하였습니다.", res);
+	  })
+
 
 /** /member/login_callback */
 router.get("/login_callback", async (req, res, next) => {

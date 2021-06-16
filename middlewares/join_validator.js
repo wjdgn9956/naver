@@ -17,6 +17,7 @@ module.exports.joinValidator = async (req, res, next) => {
 				
 				- test - 체크, exec  - 패턴에 맞는 데이터 추출 
 		*/
+		if (req.method != 'PATCH') {
 		const memId = req.body.memId;
 		if (memId.length < 8 || memId.length > 20 || /[^a-z0-9]/i.test(memId)) {
 			throw new Error('아이디는 8~20자의 알파벳과 숫자로 입력해 주세요.');
@@ -31,6 +32,7 @@ module.exports.joinValidator = async (req, res, next) => {
 		
 		if (rows[0].cnt > 0) { // 중복 아이디 
 			throw new Error('이미 사용중인 아이디 입니다');
+		}
 		}
 		
 		/**
