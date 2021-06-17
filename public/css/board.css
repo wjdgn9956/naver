@@ -6,6 +6,7 @@
 .file_box { border:1px solid #d5d5d5; padding:7px 15px; border-radius: 5px;}
 .file_box { cursor: pointer;}
 .file_box a:hover{text-decoration: underline;}
+
 /* default category_tab */
 .board_default .category_tab { text-align: center; margin-bottom: 20px; font-weight: bold;}
 .board_default .category_tab .tab { padding:10px 20px; border:1px solid #212121;
@@ -16,6 +17,9 @@ margin:0 3px; border-radius: 20px;}
 @media (max-width : 700px) {
     .board_default .category_tab .tab { display: block; width:250px; margin:5px auto;}
 }
+
+
+.member_only_comment { text-align: center; color:red; padding:30px 0; font-size:14px; font-weight: bold;}
 
 
 /* default/_form.html */
@@ -45,6 +49,15 @@ text-overflow: ellipsis; white-space: nowrap; overflow: hidden;}
 .board_default .post_list > li:after { display: block; content: ""; clear: both;}
 .board_default.list {position: relative;}
 .board_default .write_btn {position: absolute; right : 50px; top: 10px; }
+
+/* board 검색 기능 */
+
+.board_default .post_search { background-color: #f8f8f8; border-bottom: 1px solid #d5d5d5;
+padding:10px; text-align: right;}
+.board_default .post_search select { width:120px; height:30px;}
+.board_default .post_search input[type='text'] { width:200px; height: 30px;}
+.board_default .post_search .search_btn { background-color: black; color:#ffffff;
+border:0; cursor: pointer; height: 28px; padding:0 20px; border-radius: 3px;}
 
 
 /* board_main  메인 영역*/
@@ -103,3 +116,10 @@ resize: none; padding:10px; border-radius: 5px; margin-top:10px;}
 
 
 .board_default.list .post_list img { width:20px; height: 20px;}
+
+/* board/search.html */
+.search_page .search { width:450px; margin: 20px auto; }
+.search_page .search select { width: 120px;}
+.search_page .search input[type='text'] { width:calc(100% - 230px);}
+.search_page .search .search_btn { width: 100px; border:0; background-color: #000000; color:#ffffff;
+border-radius: 3px; cursor: pointer; height: 38px;}

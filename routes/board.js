@@ -4,10 +4,11 @@
 */
 const board = require('../models/board');
 const { boardConfig } = require('../middlewares/board_config');
-const { writeValidator, permissionCheck, guestOnly, commentValidator, commentPermissionCheck } = require('../middlewares/board_validator');
+const { writeValidator, permissionCheck, guestOnly, commentValidator, commentPermissionCheck, memberOnlyCheck } = require('../middlewares/board_validator');
 const { alert, go, reload, getUid, getBrowserId } = require('../lib/common');
 const express = require('express');
 const bcrypt = require('bcrypt');
+const path = require("path");
 const router = express.Router();
 
 
@@ -122,11 +123,63 @@ router.route("/comment/password/:idx")
 			}
 		});
 
+/** 게시글 검색 */
+router.get("/search", async (req, res, next) => {
+	try {
+		const sopt = req.query.sopt || 'all'; // 없는 경우는 기본값 'all' -> 통합 검색
+		const skey = req.query.skey; 
+		if (!skey) {
+			throw new Error('검색어를 입력하세요.');
+		}
+		
+		/** 검색어 처리 */
+		const where = {
+			binds : [],
+			params : {},
+		};
+		if (sopt && skey) {
+			let column = "";
+			switch (sopt) {
+				case "all" : 
+					where.binds.push("(CONCAT(a.subject, a.contents, a.poster) LIKE :skey OR b.memId LIKE :skey)");
+					break;
+				case "subject_contents":
+					column = "CONCAT(a.subject, a.contents)";
+					break;
+				default: 
+					column = sopt;
+			}
+			if (sopt != 'all') {
+				where.binds.push(column + " LIKE :skey");
+			}
+			
+			where.params.skey = "%" + skey + "%";
+		}
+		
+		/** 검색 처리 E */
+		
+		const rowsPerPage = 20;
+		const data = await board
+								.addWhere(where)
+								.getList(undefined, req.query.page, rowsPerPage, req.query);
+
+		const skin = "default";
+		data.skinPath = path.join(__dirname, "../views/board/skins/" + skin + "/_list.html");
+		data.addCss = ['board'];
+		data.isSearchPage = true;
+		data.sopt = sopt;
+		data.skey = skey;
+		return res.render("board/search", data);
+	} catch (err) {
+		return alert(err.message, res, -1);
+	}
+});
+
 
 /** 게시글 작성(양식, DB 처리), 수정, 삭제  - /board */
 router.route('/:id')
 		/** 작성 양식 - id (게시판 아이디) */
-		.get(boardConfig, async (req, res, next) => {
+		.get(boardConfig, memberOnlyCheck, async (req, res, next) => {
 			const data = { 
 				config : req.boardConfig,
 				addScript : ['board'],
@@ -197,6 +250,30 @@ router.get("/list/:id", boardConfig, async (req, res, next) => {
 		where.binds.push("a.category = :category");
 		category = where.params.category = req.query.category;
 	}
+	
+	/** 검색어 처리 */
+	const sopt = req.query.sopt; // 검색 조건 
+	const skey = req.query.skey; // 검색어 
+	
+	if (sopt && skey) {
+		let column = "";
+		switch (sopt) {
+			case "all" : 
+				where.binds.push("(CONCAT(a.subject, a.contents, a.poster) LIKE :skey OR b.memId LIKE :skey)");
+				break;
+			case "subject_contents":
+				column = "CONCAT(a.subject, a.contents)";
+				break;
+			default: 
+				column = sopt;
+		}
+		if (sopt != 'all') {
+			where.binds.push(column + " LIKE :skey");
+		}
+		
+		where.params.skey = "%" + skey + "%";
+	}
+	
 	/** 검색 처리 E */
 	
 	const rowsPerPage = req.boardConfig.rowsPerPage || 20;
@@ -207,6 +284,9 @@ router.get("/list/:id", boardConfig, async (req, res, next) => {
 	data.config = req.boardConfig;
 	data.addCss = ['board'];
 	data.category = category;
+	
+	data.sopt = sopt;
+	data.skey = skey;
 	
 	return res.render('board/list', data);
 });	
@@ -350,9 +430,10 @@ router.route("/password/:idx")
 				return alert(err.message, res);
 			}
 		});
-
+		
 		router.get("/", (req, res, next) => {
 	
 			return res.render("board/main");
 		});
+
 module.exports = router;

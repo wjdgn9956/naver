@@ -118,7 +118,7 @@ font-size: 20px;}
 
 /* quick_bar */
 .quick_bar { border:1px solid black; width:120px; height: 120px; background-color: #dedcd7; z-index: 20;
-    position: fixed; top:120px; right:8px;}
+    position: fixed; top:180px; right:8px;}
     .quick_bar li a { background-color: white; display: block; width:100px; height: 40px; 
     margin-bottom: 3px; text-align: center; line-height: 38px; color:black; margin:10px auto;
      z-index: 31; font-weight: 500; font-size: 16px;}
@@ -130,3 +130,10 @@ font-size: 20px;}
     .main_menu li {display:block; text-align: center;}
 }
 
+
+/** 메인페이지 검색 */
+ .logo_search .search { float: right; width: 350px; margin-top: 5px;}
+ .logo_search:after { clear: both; content: ''; display: block; }
+ .logo_search .search input[type='text'] { width: calc(100% - 60px); float: left; border: 3px solid #000000; border-radius: 0; }
+ .logo_search .search_btn { width: 60px; display: block; float: right; height: 40px; background-color: #000000; color: #ffffff; border: 0; cursor: pointer; } 
+ .logo_search .search:after { clear: both; content: ''; display: block; }

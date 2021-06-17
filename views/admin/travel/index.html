@@ -1,0 +1,57 @@
+{% extends "../layout.html" %}  
+
+{% block content %}  
+<div class="mtitle">여행상품 등록</div>
+<form method = "post" action="/admin/travel" target="ifrmHidden" autocomplete="off">
+    <table class ="table_cols">
+        <tr>
+            <th>상품코드</th>
+            <td width ='180'>
+                <input type="text" name ="goodsCd">
+            </td>
+            <td width ='120'>
+                <div class="btn1 generate_goodsCd">자동생성</div>
+            </td>
+            <th>상품명</th>
+            <td>
+                <input type="text" name ="goodsNm">
+            </td>
+        </tr>
+    </table>
+    <input type="submit" value ="등록하기" class ="submit_btn">
+</form>
+
+<div class="mtitle">상품목록</div>
+<table class ="table_rows">
+    <thead>
+        <tr>
+            <th width ="20">
+                <input type="checkbox" class ="check_all" data-target-name ="goodsCd">
+            </th>
+            <th width ="150">상품코드</th>
+            <th width ="300">상품명</th>
+            <th width ="120">등록일시</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in list %}  
+         <tr>
+             <td align ="center">
+                 <input type="checkbox" name ="goodsCd" value = "{{ item.goodsCd }}">
+             </td>
+             <td align ="center">{{ item.goodsCd }}</td>
+             <td>{{ item.goodsNm }}</td>
+             <td align="center">{{ item.regDt }}</td>
+             <td>
+                 <a href="/admin/travel/{{ item.goodsCd }}" class ="btn1">설정하기</a>
+                 <a href="/travel/{{ item.goodsCd }}" target="_blank" class="btn2">미리보기</a>
+             </td>
+         </tr>
+
+        {% endfor %} 
+    </tbody>
+</table>
+
+{{ pagination | safe }}
+{% endblock %}  
