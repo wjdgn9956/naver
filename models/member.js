@@ -122,15 +122,26 @@ const member = {
      */
     update : async function() {
         try {
+            let addSet = "";
             const data = this.params;
+
+            if (data.memPw) {
+            addset += ", memPw = :memPw";
+            const hash = await bcrypt.hash(data.memPw, 10);
+            replacements.memPw = hash;
+            }
+
+            
             const sql = `UPDATE member
                          SET
                          memNm = :memNm,
                          email = :email,
                          cellPhone = :cellPhone
+                         ${addSet}
                          address = :address
                          WHERE
                              idx = :idx`;
+
             const replacements = {
                 memNm : data.memId,
                 email : data.email,

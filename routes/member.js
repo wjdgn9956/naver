@@ -66,9 +66,10 @@ router.get('/logout', (req, res, next) => {
 	return res.redirect("/member/login");
 });
 
+// 회원정보 수정//
 router.route("/update")
-	  .get((req, res, next) => {
-
+	  .get( memberOnly, (req, res, next) => {
+		
 		return res.render("member/form");
 	  })
 	  .patch(async (req, res, next) => {
