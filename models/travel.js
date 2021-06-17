@@ -1,7 +1,8 @@
 const { sequelize, Sequelize : { QueryTypes } } = require('./index');
-const { parseDate } = require("../lib/common");
+const { parseDate } = require('../lib/common');
 const logger = require('../lib/logger');
 const pagination = require('pagination');
+const fileUpload = require("./file_upload");
 
 /**
 * 여행 관련
@@ -10,6 +11,16 @@ const pagination = require('pagination');
 const travel = {
 	/** 처리할 데이터 */
 	params : {},
+	
+	/** 교통편 */
+	transportations : [
+		{ type : 'airline_domestic', name1 : '국내선', name2 : '항공편' },
+		{ type : 'airline_inter', name1 : '국제선', name2 : '항공편' },
+		{ type : 'ship_domestic', name1 : '국내선', name2 : '배편' },
+		{ type : 'ship_inter', name1 : '국제선', name2 : '배편' },
+		{ type : 'bus', name1 : '버스', name2 : '' },
+	],
+	
 	/**
 	* 처리할 데이터 설정
 	*
@@ -41,6 +52,70 @@ const travel = {
 		} catch (err) {
 			logger(err.stack, 'error');
 			return false;
+		}
+	},
+	/**
+	* 상품정보 저장 
+	*
+	* @return Boolean
+	*/
+	save : async function() {
+		try {
+			const sql = `UPDATE travelgoods 
+									SET 
+										goodsNm = :goodsNm,
+										shortDescription = :shortDescription,
+										itinerary = :itinerary,
+										transportation = :transportation,
+										shopping = :shopping,
+										isGroup = :isGroup
+								WHERE 
+										goodsCd = :goodsCd`;
+			
+			const replacements = {
+				goodsNm : this.params.goodsNm,
+				shortDescription : this.params.shortDescription,
+				itinerary : this.params.itinerary,
+				transportation : this.params.transportation || 'bus',
+				shopping : this.params.shopping || 0,
+				isGroup : this.params.isGroup || 0,
+				goodsCd : this.params.goodsCd,
+			};
+			
+			await sequelize.query(sql, {
+				replacements,
+				type : QueryTypes.UPDATE,
+			});
+			
+			return true;
+		} catch(err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 상품정보 
+	*
+	* @param String goodsCd 상품코드
+	* @return Object
+	*/
+	get : async function(goodsCd) {
+		try {
+			const sql = "SELECT * FROM travelgoods WHERE goodsCd = ?";
+			const rows = await sequelize.query(sql, {
+				replacements : [goodsCd],
+				type : QueryTypes.SELECT,
+			});
+			
+			const data = rows[0] || {};
+			if (rows.length > 0) {
+				data.mainImages = await this.getImages(goodsCd, "main");
+				data.listImages = await this.getImages(goodsCd, "list");
+			}
+			return data;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return {};
 		}
 	},
 	/**
@@ -88,10 +163,10 @@ const travel = {
 				replacements, 
 				type : QueryTypes.SELECT,
 			});
-
-            list.forEach((v, i, _list) => {
-                _list[i].regDt = parseDate(v.regDt).datetime;
-            })
+			
+			list.forEach((v, i, _list) => {
+				_list[i].regDt = parseDate(v.regDt).datetime;
+			});
 			
 			const data = { 
 				totalResult, 
@@ -104,6 +179,21 @@ const travel = {
 			logger(err.stack, 'error');
 			return {};
 		}
+	},
+	/**
+	* 상품이미지 조회
+	*
+	* @param String goodsCd 상품코드
+	* @param String type  (main - 메인, list - 목록)
+	* 
+	* @return Array
+	*/
+	getImages : async function(goodsCd, type) {
+		const files = await fileUpload.gets(goodsCd + "_" + type);
+
+		const data = files.editor?files.editor:[];
+		
+		return data;
 	},
 };
 

@@ -1,5 +1,93 @@
-{% extends "../layout.html" %}  
-
-{% block content %}  
-<div class="mtitle">상품 수정</div>
-{% endblock %} 
+{% extends '../layout.html' %}
+{% block content %}
+<div class='mtitle'>상품 수정 - {{ goodsNm }}</div>
+<form method='post' action='/admin/travel/{{ goodsCd }}' target='ifrmHidden' autocomplete='off'>
+	<input type='hidden' name='goodsCd' value='{{ goodsCd }}'>
+	<table class='table_cols'>
+		<tr>
+			<th>상품코드</th>
+			<td>{{ goodsCd }}</td>
+		</tr>
+		<tr>
+			<th>상품명</th>
+			<td>
+				<input type='text' name='goodsNm' value='{{ goodsNm }}'>
+			</td>
+		</tr>
+		<tr>
+			<th>짧은설명</th>
+			<td>
+				<input type='text' name='shortDescription' value='{{ shortDescription }}'>
+			</td>
+		</tr>
+		<tr>
+			<th>여행일정</th>
+			<td>
+				<input type='text' name='itinerary' value='{{ itinerary }}'>
+			<td>
+		</tr>
+		<tr>
+			<th>교통편</th>
+			<td>
+				{% for item in transportations %}
+				<input type='radio' name='transportation' value='{{ item.type }}' id='transportation_{{ loop.index }}'{% if transportation == item.type %} checked{% endif %}>
+				<label for='transportation_{{ loop.index }}'>{{ item.name1 }}{% if item.name2 %}({{ item.name2 }}){% endif %}</label>
+				{% endfor %}
+			</td>
+		</tr>
+		<tr>
+			<th>쇼핑횟수</th>
+			<td>
+				<input type='number' name='shopping' value='{{ shopping }}'>
+			</td>
+		</tr>
+		<tr>
+			<th>행사구분</th>
+			<td>
+				<input type='radio' name='isGroup' value='1' id='isGroup_1'{{ ' checked' if isGroup }}>
+				<label for='isGroup_1'>단체행사</label>
+				
+				<input type='radio' name='isGroup' value='0' id='isGroup_0'{{ ' checked' if not isGroup }}>
+				<label for='isGroup_0'>개인</label>
+			</td>
+		</tr>
+		<tr>
+			<th>메인 이미지</th>
+			<td>
+				<span class='btn1' onclick="layer.popup('/file/upload/{{ goodsCd }}_main?mode=image', 320, 250);">이미지 추가</span>
+				<div class='uploaded_images main_images'>
+				{% if mainImages.length >0 %}
+				{% for item in mainImages %}
+				<span class='images' 
+				data-idx='{{ item.idx }}' 
+				style="background:url('{{ item.fileUrl }}') no-repeat center center; background-size: cover;">
+					<div onclick="layer.popup('/file/view/{{ item.idx }}', 600, 600);"></div>
+					<i class='xi-close-min remove'></i>
+				</span>
+				{% endfor %}
+				{% endif %}
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th>목록 이미지</th>
+			<td>
+				<span class='btn1' onclick="layer.popup('/file/upload/{{ goodsCd }}_list?mode=image', 320, 250);">이미지 추가</span>
+				<div class='uploaded_images list_images'>
+				{% if listImages.length >0 %}
+				{% for item in listImages %}
+				<span class='images' 
+				data-idx='{{ item.idx }}' 
+				style="background:url('{{ item.fileUrl }}') no-repeat center center; background-size: cover;">
+					<div onclick="layer.popup('/file/view/{{ item.idx }}', 600, 600);"></div>
+					<i class='xi-close-min remove'></i>
+				</span>
+				{% endfor %}
+				{% endif %}
+				</div>
+			</td>
+		</tr>
+	</table>
+	<input type='submit' value='저장하기' class='submit_btn'>
+</form>
+{% endblock %}

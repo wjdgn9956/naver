@@ -16,4 +16,11 @@ $(function() {
 	  })
 
 	  /** 상품코드 자동생성 E */
+
+	  // 파일 업로드//
+
+	$("body").on("change", ".file_upload_form input[type='file']", function() {
+		$(this).closest("form").submit();
+	});
+ 
 });
