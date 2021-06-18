@@ -9,6 +9,15 @@
 			<td>{{ goodsCd }}</td>
 		</tr>
 		<tr>
+			<th>여행구분</th>
+			<td>
+				<input type='radio' name='category' value='domestic' id='category_domestic'{% if category == 'domestic' %} checked{% endif %}>
+				<label for='category_domestic'>국내여행</label>&nbsp;&nbsp;
+				<input type='radio' name='category' value='overseas' id='category_overseas'{% if category == 'overseas' %} checked{% endif %}>
+				<label for='category_overseas'>해외여행</label>
+			</td>
+		</tr>
+		<tr>
 			<th>상품명</th>
 			<td>
 				<input type='text' name='goodsNm' value='{{ goodsNm }}'>
@@ -21,9 +30,15 @@
 			</td>
 		</tr>
 		<tr>
+			<th>여행도시</th>
+			<td>
+				<input type='text' name='city' value='{{ city }}'>
+			</td>
+		</tr>
+		<tr>
 			<th>여행일정</th>
 			<td>
-				<input type='text' name='itinerary' value='{{ itinerary }}'>
+				<input type='number' name='itinerary' value='{{ itinerary }}'>
 			<td>
 		</tr>
 		<tr>
@@ -49,6 +64,35 @@
 				
 				<input type='radio' name='isGroup' value='0' id='isGroup_0'{{ ' checked' if not isGroup }}>
 				<label for='isGroup_0'>개인</label>
+			</td>
+		</tr>
+		<tr>
+			<th>판매가(성인기준)</th>
+			<td>
+				<input type='number' name='priceAdult' value='{{ priceAdult }}'>
+			</td>
+		</tr>
+		<tr>
+			<th>판매가(아동기준)</th>
+			<td>
+				<input type='number' name='priceChild' value='{{ priceChild }}'>
+			</td>
+		</tr>
+		<tr>
+			<th>예약가능요일</th>
+			<td>
+			{% for yoil in _yoils %}
+				<input type='checkbox' name='yoils' value='{{ loop.index - 1 }}' id='yoils_{{ loop.index }}'{{ ' checked' if yoilChecked[loop.index - 1] }}>
+				<label for='yoils_{{ loop.index }}'>{{ yoil }}</label>&nbsp;&nbsp;
+			{% endfor %}
+			</td>
+		</tr>
+		<tr>
+			<th>예약가능일</th>
+			<td>
+				<input type='text' name='startDate' value='{{ startDate }}' class='datepicker' readonly>
+				~ 
+				<input type='text' name='endDate' value='{{ endDate }}' class='datepicker' readonly>
 			</td>
 		</tr>
 		<tr>
@@ -84,6 +128,27 @@
 				</span>
 				{% endfor %}
 				{% endif %}
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th>상품설명</th>
+			<td>
+				<textarea name='contents' id='contents'>{{ contents }}</textarea>
+				<div class='mt10'>
+					<span class='btn1' onclick="layer.popup('/file/upload/{{ goodsCd }}_desc?mode=image', 320, 250);">이미지 추가</span>
+					<div class='uploaded_images desc_images'>
+					{% if descImages.length >0 %}
+					{% for item in descImages %}
+					<span class='images' 
+					data-idx='{{ item.idx }}' 
+					style="background:url('{{ item.fileUrl }}') no-repeat center center; background-size: cover;">
+						<div onclick="layer.popup('/file/view/{{ item.idx }}', 600, 600);"></div>
+						<i class='xi-close-min remove'></i>
+					</span>
+					{% endfor %}
+					{% endif %}
+					</div>
 				</div>
 			</td>
 		</tr>

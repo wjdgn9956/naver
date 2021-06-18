@@ -18,6 +18,7 @@ const travel = {
 		{ type : 'airline_inter', name1 : '국제선', name2 : '항공편' },
 		{ type : 'ship_domestic', name1 : '국내선', name2 : '배편' },
 		{ type : 'ship_inter', name1 : '국제선', name2 : '배편' },
+		{ type : 'train', name1 : '기차', name2 : '' },
 		{ type : 'bus', name1 : '버스', name2 : '' },
 	],
 	
@@ -63,22 +64,47 @@ const travel = {
 		try {
 			const sql = `UPDATE travelgoods 
 									SET 
+										category = :category,
 										goodsNm = :goodsNm,
 										shortDescription = :shortDescription,
+										city = :city,
 										itinerary = :itinerary,
 										transportation = :transportation,
 										shopping = :shopping,
-										isGroup = :isGroup
+										isGroup = :isGroup,
+										priceAdult = :priceAdult,
+										priceChild = :priceChild,
+										contents = :contents,
+										yoils = :yoils,
+										startDate = :startDate,
+										endDate = :endDate
 								WHERE 
 										goodsCd = :goodsCd`;
 			
+			let yoils = "";
+			if (this.params.yoils) {
+				if (!(this.params.yoils instanceof Array)) { // 배열객체가 아닌 경우는 단일 선택 -> 배열객체 변경
+					this.params.yoils = [this.params.yoils];
+				}
+				
+				yoils = this.params.yoils.join("||");
+			}
+			
 			const replacements = {
+				category : this.params.category || 'domestic',
 				goodsNm : this.params.goodsNm,
 				shortDescription : this.params.shortDescription,
-				itinerary : this.params.itinerary,
+				city : this.params.city,
+				itinerary : this.params.itinerary || 0,
 				transportation : this.params.transportation || 'bus',
 				shopping : this.params.shopping || 0,
 				isGroup : this.params.isGroup || 0,
+				priceAdult : this.params.priceAdult || 0,
+				priceChild : this.params.priceChild || 0,
+				contents : this.params.contents,
+				yoils,
+				startDate : this.params.startDate || new Date(),
+				endDate	: this.params.endDate || new Date(),
 				goodsCd : this.params.goodsCd,
 			};
 			
@@ -111,7 +137,22 @@ const travel = {
 			if (rows.length > 0) {
 				data.mainImages = await this.getImages(goodsCd, "main");
 				data.listImages = await this.getImages(goodsCd, "list");
+				data.descImages = await this.getImages(goodsCd, "desc");
+				
+				/** 예약 가능 요일 */
+				data.yoils = data.yoils?data.yoils.split("||"):[];
+				data.yoilChecked = [];
+				for (let i = 0; i < 7; i++) {
+					let isChecked = false;
+					data.yoils.forEach((yoil) => {
+						if (yoil == i) {
+							isChecked = true;
+						}
+					});
+					data.yoilChecked[i] = isChecked;
+				}
 			}
+			
 			return data;
 		} catch (err) {
 			logger(err.stack, 'error');
@@ -195,6 +236,130 @@ const travel = {
 		
 		return data;
 	},
+	/**
+	* 상품 삭제 
+	*
+	* @param String goodsCd
+	* @return Boolean
+	*/
+	delete : async function(goodsCd) {
+		try {
+			/** 
+			  1. 이미지 파일 삭제 
+			  2. 상품 DB 삭제 
+			*/
+			 const data = await this.get(goodsCd);
+			 if (!data.goodsCd) {
+				 throw new Error('등록되지 않은 상품입니다.');
+			 }
+			 
+			 /** 이미지 파일 삭제 S */
+			 ["main", "list", "desc"].forEach(async (type) => {
+				const key = `${type}Images`;
+				if (data[key] && data[key].length > 0) {
+					data[key].forEach(async (v) => {
+						await fileUpload.delete(v.idx);
+					});
+				}
+			 });
+			 /** 이미지 파일 삭제 E */
+			 
+			 /** 상품 DB 데이터 삭제 S */
+			 const sql = "DELETE FROM travelgoods WHERE goodsCd = ?";
+			 await sequelize.query(sql, {
+				replacements : [goodsCd],
+				type : QueryTypes.DELETE,
+			 });
+			 /** 상품 DB 데이터 삭제 E */
+			 
+			 return true;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 패키지 가능 일정 조회
+	*
+	* @param String goodsCd 
+	* @return Array
+	*/
+	getPackageSchedules : async function(goodsCd) {
+		try {
+			const sql = "SELECT itinerary, yoils, startDate, endDate FROM travelgoods WHERE goodsCd = ?";
+			const rows = await sequelize.query(sql, {
+				replacements : [goodsCd],
+				type : QueryTypes.SELECT,
+			});
+			if (rows.length == 0)
+				throw new Error('등록되지 않은 상품입니다.');
+			
+			const data = rows[0];
+			if (!data.yoils || !data.startDate || !data.endDate || !data.itinerary) {
+				throw new Error("가능한 요일, 기간 설정이 되지 않았습니다.");
+			}
+			
+			const yoils = data.yoils.split("||");
+			let startStamp = new Date(data.startDate + " 00:00:00").getTime();
+			const endStamp = new Date(data.endDate + " 23:59:59").getTime();
+			const oneDayStamp = 60 * 60 * 24 * 1000;
+			
+			const todayStamp = new Date().getTime() + oneDayStamp * 2;
+			if (todayStamp > startStamp) startStamp = todayStamp;
+			
+			const list = [];
+			for (let i = startStamp; i < endStamp; i += oneDayStamp) {
+				const date = new Date(i);
+				const yoil = date.getDay();
+				if (yoils.indexOf(String(yoil)) != -1 || yoils.indexOf(yoil) != -1 ) {
+					const sstamp = date.getTime();
+					const estamp = sstamp + oneDayStamp * (Number(data.itinerary) - 1);
+					if (estamp > endStamp) continue;
+					
+					const sdate = parseDate(sstamp).date;
+					const edate = parseDate(estamp).date;
+					
+					const pac = {
+						sstamp,
+						estamp,
+						sdate,
+						edate,
+					};
+					list.push(pac);
+				}
+			}
+			
+			return list;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return [];
+		}
+	},
+	/**
+	* 패키지 등록 
+	*
+	* @return Boolean
+	*/
+	registerPackage : async function() {
+		try {
+			const period = this.parrams.period.split("_");
+			const replacements = {
+				startDate :  new Date(Number(period[0])),
+				endDate : new Date(Number(period[1])),
+				goodsCd : this.params.goodsCd,
+				addPrice : this.params.addPrice || 0,
+				minPersons : this.params.minPersons || 0,
+				maxPersons : this.params.maxPersons || 0,
+			}
+			
+			const sql = `INSERT INTO travelgoods_package (startDate, endDate, goodsCd, addPrice, minPersons, maxPersons)
+								
+			`;
+		} catch (err) {
+			logger(err, 'error');
+			return false;
+		}
+	}
 };
 
 module.exports = travel;

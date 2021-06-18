@@ -1,0 +1,152 @@
+{% extends '../layout.html' %}
+{% block content %}
+<div class='travel_goods layout_width'>
+	<div class='top_box'>
+		<div class='images'>
+			{% if mainImages.length > 0 %}
+			<div class="swiper-container mySwiper">
+			  <div class="swiper-wrapper">
+				{% for item in mainImages %}
+				<div class="swiper-slide">
+					<img src='{{ item.fileUrl }}'>
+				</div>
+				{% endfor %}
+			  </div>
+			  <i class='xi-angle-left-thin navi prev'></i>
+			  <i class='xi-angle-right-thin navi next'></i>
+			  <div class="swiper-pagination"></div>
+			</div>
+			{% endif %}
+			<div class='goods_cd'>상품코드 <strong>{{ goodsCd }}</strong></div>
+		</div>
+		<div class='goods_info'>
+			<div class='goods_nm'>{{ goodsNm }}</div>
+			<div class='short_desc'>
+			{% if shortDescription %}
+				<i class='xi-info-o'></i>
+				{{ shortDescription }}
+			{% endif %}
+			</div>
+			
+			<ul class='icon_info'>
+			{% if itinerary > 0 %}
+				<li>
+					<i class='xi-calendar'></i>
+					<div class='text'>
+					{% if itinerary == 1 %}
+						하루일정
+					{% else %}
+						{{ itinerary - 1}}박 {{ itinerary }}일
+					{% endif %}
+					</div>
+				</li>
+			{% endif %}
+				<li>
+					{% if transportation == 'airline_domestic' or transportation == 'airline_inter' %}
+					<i class='xi-airplane'></i>
+					{% elseif transportation == 'ship_domestic' or transportation == 'ship_inter' %}
+					<i class='xi-ship'></i>
+					{% elseif transportation == 'train' %}
+					<i class='xi-train'></i>
+					{% else %}
+					<i class='xi-bus'></i>
+					{% endif %}
+					<div class='text'>
+					{% if transportation == 'airline_domestic' or transportation == 'ship_domestic' %} 
+						국내선
+					{% elseif transportation == 'airline_inter' or transportation == 'ship_inter' %}
+						국제선				
+					{% elseif transportation == 'train' %}
+						기차
+					{% else %}
+						버스
+					{% endif %}
+					</div>
+				</li>
+				{% if shopping > 0 %}
+				<li>
+					<i class='xi-cart-o'></i>
+					<div class='text'>쇼핑 {{ shopping }}회</div>
+				</li>
+				{% endif %}
+				<li>
+					<i class='xi-gift-o'></i>
+					<div class='text'>{{ '단체행사' if isGroup else '자유여행' }}</div>
+				</li>
+			</ul>	
+			<div class='price_info'>
+				<div class='target'>성인 1인</div>
+				<div class='price'>
+					<span class='no'>{{ priceAdult.toLocaleString() }}</span>원
+				</div>
+			</div>
+			<!--// price_info -->
+		</div>
+	</div>
+	<!--// top_box -->
+	<div class='bottom_box'>
+		<div class='description'>
+			{{ contents | safe }}
+		</div>
+		<div class='reservation' data-adult='{{ priceAdult }}' data-child='{{ priceChild }}'>
+			<form name='frmTravelGoods' method='post' action='/travel/reservation' autocomplete='off'>
+				<input type='hidden' name='goodsCd' value='{{ goodsCd }}' class='goodscd'>
+				<div class='persons'>
+					<div class='tit'>인원선택</div>
+					<dl>
+						<dt>
+							<div class='txt'>성인</div>
+							<div class='price'>{{ priceAdult.toLocaleString() }}원</div>
+						</dt>
+						<dd>
+							<div class='goods_cnt_wrap'>
+								<i class='cnt_btn down xi-minus-thin'></i>
+								<input type='text' name='goodsCnt_adult' value='1' class='goods_cnt' readonly>
+								<i class='cnt_btn up xi-plus-thin'></i>
+							</div>
+						</dd>
+					</dl>
+					<dl>
+						<dt>
+							<div class='txt'>아동(만 13세 이하)</div>
+							<div class='price'>{{ priceChild.toLocaleString() }}원</div>
+						</dt>
+						<dd>
+							<div class='goods_cnt_wrap'>
+								<i class='cnt_btn down xi-minus-thin'></i>
+								<input type='text' name='goodsCnt_child' value='0' class='goods_cnt' readonly>
+								<i class='cnt_btn up xi-plus-thin'></i>
+							</div>
+						</dd>
+					</dl>
+					<dl>
+						<dt>
+							<div class='txt'>유아(만 2세 이하)</div>
+							<div class='price'>-</div>
+						</dt>
+						<dd>
+							<div class='goods_cnt_wrap'>
+								<i class='cnt_btn down xi-minus-thin'></i>
+								<input type='text' name='goodsCnt_infant' value='0' class='goods_cnt' readonly>
+								<i class='cnt_btn up xi-plus-thin'></i>
+							</div>
+						</dd>
+					</dl>
+				</div>
+				<dl class='settle_info'>
+					<dt>총금액</dt>
+					<dd>
+						<div class='total_price'>
+							<span class='no'>{{ priceAdult.toLocaleString() }}</span>원
+						</div>
+						<div class='guide_txt'>유류할증료&amp;제세공과금 포함</div>
+					</dd>
+				</dl>
+				<div class='apply_reservation{% if not isLogin %} not_login{% endif %}'>예약하기</div>
+			</form>
+		</div>
+	</div>
+	<!--// bottom_box -->
+</div>
+<!--// travel_goods -->
+{% endblock %}

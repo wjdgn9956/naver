@@ -1,0 +1,33 @@
+{% extends '../layout.html' %}
+{% block content %}
+<div class='mtitle'>패키지 일정 등록</div>
+<form method='post' action='/admin/travel/package/{{ goodsCd }}' target='ifrmHidden' autocomplete='off'>
+	<table class='table_cols'>
+		<tr>
+			<th>일정선택</th>
+			<td width='300'>
+				<select name='period'>
+				{% for item in schedules %}
+					<option value='{{ item.sstamp }}_{{ item.estamp }}'>{{ item.sdate }}~{{ item.edate }}</option>
+				{% endfor %}
+				</select>
+			</td>
+			<th>판매가조정</th>
+			<td>
+				<input type='number' name='addPrice'>
+			</td>
+		</tr>
+		<tr>
+			<th>최소 예약인원</th>
+			<td>
+				<input type='number' name='minPersons'>
+			</td>
+			<th>최대 예약인원</th>
+			<td>
+				<input type='number' name='maxPersons'>
+			</td>
+		</tr>
+	</table>
+	<input type='submit' value='등록하기' class='submit_btn'>
+</form>
+{% endblock %}

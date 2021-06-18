@@ -61,36 +61,45 @@ border:0; cursor: pointer; height: 28px; padding:0 20px; border-radius: 3px;}
 
 
 /* board_main  메인 영역*/
-.board_main { margin-top: 100px;}
-.board_main .box {float:left; width: calc( 100%/ 5);}
-.board_main:after{clear:left; content: ""; display: block;}
+.board_main a {
+    float: left;
+    width: calc(100% / 5 - 10px);
+    display: block;
+    margin-left: 12.5px;
+    margin-top: 100px;
+}
 
-
-.board_main .box .inner{
-    width:230px;
-    height: 300px;
+.board_main a:first-child{margin-left: 0;}
+.board_main:after { clear: left; display: block; content: "";}
+.board_main a .photo .inner img {
+   
+    width: 260px;
+    height: 280px;
+}
+.board_main a .photo .inner img:hover{
+    transform: scale(1.2);
+}
+.board_main a .photo .inner {
     overflow: hidden;
+    
 }
-.board_main .box .inner img{
-    width: 230px;
-    height: 300px;
-    transition: all 1.3s;
+
+.board_main a:last-child{
+    margin-right:0;
 }
-.board_main .box .inner:first-child{
-    margin-left:20px;
-}
-.board_main .box img { width: 100%;  display: block; }
-.board_main .box .inner img:hover {
-    transform:scale(1.2);
-}
-.board_main .title { text-align: center; font-size:17px; margin-top:20px; font-weight: 16px; }
+.board_main .title {text-align: center; font-size: 16px; font-weight: 500; margin-top:15px;}
 
 
-@media (max-width: 850px) {
-    .board_main .box { width: calc(100% / 2);}
+
+@media (max-width: 800px) {
+    .board_main a { width: calc(100% / 2); margin-left: 0;}
+    
 }
 
 .board_default.comment { border: 1px solid #d5d5d5; padding: 10px;}
+
+
+
 /* default/_comment_html */
 .board_default.comment .comment_info input[type='text'],
 .board_default.comment .comment_info input[type='password'] { width:100px; height:25px;}

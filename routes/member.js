@@ -47,6 +47,12 @@ router.route('/login')
 			const data = {
 				naverLoginUrl : naverLogin.getCodeUrl(),
 			};
+			
+			// returnUrl
+			if (req.query.returnUrl) {
+				req.session.returnUrl = req.query.returnUrl;
+			}
+			
 			return res.render("member/login", data);
 		})
 		/** 로그인 처리 */
@@ -54,7 +60,12 @@ router.route('/login')
 			
 			const result = await member.login(req.body.memId, req.body.memPw, req);
 			if (result) { // 로그인 성공 -> 메인 페이지
-				return go("/", res, "parent");
+				let url = "/";
+				if (req.session.returnUrl) {
+					url = req.session.returnUrl;
+					delete req.session.returnUrl;
+				}
+				return go(url, res, "parent");
 			}
 			
 			return alert("로그인에 실패하셨습니다.", res);
@@ -65,20 +76,6 @@ router.get('/logout', (req, res, next) => {
 	req.session.destroy();
 	return res.redirect("/member/login");
 });
-
-// 회원정보 수정//
-router.route("/update")
-	  .get( memberOnly, (req, res, next) => {
-		
-		return res.render("member/form");
-	  })
-	  .patch(async (req, res, next) => {
-		 const result = await member.data(req.body).update();
-		 if (result) {
-			return go("/", res, "parent");
-		 }
-		 	return alert("회원수정에 실패하였습니다.", res);
-	  })
 
 
 /** /member/login_callback */

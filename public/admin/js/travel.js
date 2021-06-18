@@ -1,4 +1,10 @@
 $(function() {
+	/** 에디터 로딩 */
+	if ($("#contents").length > 0) {
+		CKEDITOR.replace("contents");
+		CKEDITOR.config.height=350;
+	}
+	
 	/** 상품 이미지 삭제 */
 	$("body").on("click", ".uploaded_images .remove", function() {
 		if (!confirm('정말 삭제하시겠습니까?')) {
@@ -19,7 +25,7 @@ $(function() {
 			.catch((err) => {
 				console.error(err);
 			});
-	});
+	});	
 });
 
 /**
@@ -40,10 +46,14 @@ function fileUploadCallback(data) {
 		</span>
 	`;
 
-	if (data.gid.indexOf("main") == -1) { // 목록 
-		$(".list_images").append(tag);
-	} else { // 메인 
+	if (data.gid.indexOf("main") != -1) { // 메인 
 		$(".main_images").append(tag);
+	} else if (data.gid.indexOf("list") != -1) { // 목록
+		$(".list_images").append(tag);
+	} else { // 에디터 이미지 
+		const img = `<img src='${data.fileUrl}'>`;
+		CKEDITOR.instances.contents.insertHtml(img);
+		$(".desc_images").append(tag);
 	}
 	
 	layer.close();

@@ -41,6 +41,8 @@ border-radius: 3px; margin: 0 2px;}
 /*  팝업 공통*/
 .popup_tit { font-size: 17px; font-weight: bold; padding-bottom: 10px; margin-bottom: 20px;
 border-bottom: 1px solid #212121;}
+/** 레이아웃 */
+.layout_width { width: 1200px; margin: 0 auto; }
 
 /* 메인 헤더 공통 */
 .nav  {  background-color: 

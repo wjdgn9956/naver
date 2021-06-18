@@ -1,0 +1,57 @@
+.body_travel .top_box { padding-bottom: 60px; }
+.body_travel .top_box .images { float: left; width: 674px; height: 449px; }
+.body_travel .top_box .goods_info { float: right; width: calc(100% - 710px); position: relative; height: 449px; }
+.body_travel .top_box:after { clear: both; content: ''; display: block; }
+
+.body_travel .top_box .images img { width: 100%; display: block; height: 449px; }
+.body_travel .top_box .images .goods_cd { margin-top: 20px;  font-size: 13px; font-weight: 400; color: #666; line-height: 26px; }
+.body_travel .top_box .images .goods_cd strong { margin-left: 10px; font-weight: 900; }
+
+.body_travel .goods_info .goods_nm { font-size: 26px; font-weight: 400; color: #111; line-height: 36px; letter-spacing: -1px; margin-bottom: 10px; }
+
+.body_travel .goods_info .short_desc { font-size: 13px; color: #333; line-height: 20px; border-bottom: 1px solid #eaeaea; padding: 5px 0 20px; margin-bottom: 20px; }
+
+.body_travel .goods_info .price_info { position: absolute; bottom: 0; right: 0; text-align: right; }
+.body_travel .goods_info .price_info .target { margin-bottom: 2px; font-size: 14px; color: #666; }
+.body_travel .goods_info .price_info .price { font-size: 22px; color: #333; font-weight: 400; }
+.body_travel .goods_info .price_info .no { font-size: 32px; color: #333; font-weight: 600; }
+
+.body_travel .icon_info li { float: left; margin-right: 30px; text-align: center; }
+.body_travel .icon_info:after { clear: left; content: ''; display: block; }
+.body_travel .icon_info li i { font-size: 30px; color: #666666; }
+.body_travel .icon_info li .text { font-size: 13px; line-height: 20px; color: #333; margin-top: 5px; }
+
+.body_travel .bottom_box { border-top: 2px solid #111111; }
+.body_travel .bottom_box .description { width: calc(100% - 305px); float: left; padding: 40px 24px 0 0; border-right: 1px solid #dddddd; }
+.body_travel .bottom_box .reservation { width: 305px; float: right; padding: 40px 20px; }
+.body_travel .bottom_box:after { clear: both; content: ''; display: block; }
+.body_travel .bottom_box .description img { max-width: 870px; }
+
+.body_travel .top_box .swiper-pagination-fraction {  bottom: 20px !important; padding-right: 40px; background:rgba(0, 0, 0, 0.5); color: #ffffff; display: inline-block !important; width: auto !important; height: 30px; padding: 0 15px !important; line-height: 30px; border-radius: 7px; left: auto;  right: 20px; }
+
+.body_travel .navi { font-size: 50px; position: absolute; z-index: 5; top: 200px; cursor: pointer; color: #ffffff; }
+.body_travel .navi.next { right: 0; }
+
+.body_travel .reservation .tit { font-size: 22px;  font-weight: 600; color: #111; }
+.body_travel .reservation .persons dd { width: 120px; }
+.body_travel .reservation .persons dt { width: calc(100% - 110px); }
+.body_travel .reservation .persons dt .txt { font-size: 13px; color: #888; padding-bottom: 3px; }
+.body_travel .reservation .persons dt .price { font-size: 17px; font-weight: 600; line-height: 1; }
+
+.body_travel .reservation .goods_cnt_wrap { border: 1px solid #c3c3c3; width: 106px; }
+.body_travel .reservation .goods_cnt { width: 34px; height: 34px; border: 1px solid #c3c3c3; border-top: 0; border-bottom: 0; border-radius: 0; display: block; float: left; font-size: 12px; text-align: center; padding: 0; }
+.body_travel .reservation .cnt_btn { display: block; height: 34px; width: 34px; text-align: center; line-height: 34px; float: left; cursor: pointer; font-size: 17px; }
+.body_travel .reservation .goods_cnt_wrap:after { clear: left; content: ''; display: block; }
+
+.body_travel .reservation .persons dl { margin: 25px 0; }
+.body_travel .reservation .persons { border-bottom: 1px solid #cecece; }
+
+.body_travel .reservation .settle_info { padding: 20px 0; display: table; width: 100%; border-bottom: 1px solid #ececec; margin-bottom: 20px;}
+.body_travel .reservation .settle_info dt { display: table-cell; vertical-align: top; font-size: 15px; color: #111; font-weight: 600; }
+.body_travel .reservation .settle_info dd { display: table-cell; vertical-align: top; text-align: right; }
+.body_travel .reservation .settle_info dd .total_price { font-size: 20px; color: #ec2471; font-weight: bold;  }
+.body_travel .reservation .settle_info dd .total_price .no { font-size: 32px; color: #ec2471; font-weight: bold; margin: 8px 0 3px; line-height: 32px; letter-spacing: -1px; }
+.body_travel .reservation .settle_info .guide_txt { color: #888888; font-size: 12px; margin-top: 5px; }
+
+.body_travel .apply_reservation {background-color: #5399cb; height: 56px; line-height: 56px; text-align: center; color:#ffffff;
+cursor: pointer; border-radius: 5px;}

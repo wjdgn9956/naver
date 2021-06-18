@@ -10,6 +10,7 @@ const logger = require('./lib/logger');
 const { sequelize } = require('./models');
 const { mainMenu } = require('./middlewares/main_menu'); // 메인 메뉴 
 const { loginSession } = require('./middlewares/login_session'); // 로그인 세션 처리 
+const { bodyClass } = require('./middlewares/body_class'); // bodyClass
 const chat = require("./middlewares/chat");
 const app = express();
 
@@ -23,6 +24,7 @@ const indexRouter = require('./routes'); // 메인 페이지
 const memberRouter = require('./routes/member'); // 회원 페이지 
 const boardRouter = require('./routes/board'); // 게시판 페이지
 const fileRouter = require("./routes/file"); // 파일 업로드
+const travelRouter = require("./routes/travel"); // 여행 상품 페이지
 
 /** admin 라우터 */
 const adminRouter = require('./routes/admin'); // 관리자 메인페이지 
@@ -83,40 +85,16 @@ app.use(loginSession); // 로그인 세션 처리
 app.use(mainMenu); // 메인멘뉴 
 
 
-/** 공통 라우터 */
-app.use((req, res, next) => {
-	/* body 클래스 자동 완성(url 기준) */
-	let url = req.url;
-	let end = url.indexOf("?");
-	if (end !== -1) {
-		url = url.slice(0,end);
-	}
-	end = url.indexOf("#");
-	if (end !== -1) {
-		url = url.slice(0,end);
-	}
-	
-	let addClass = "";
-	if (url == '/') addClass = "main";
-	else {
-		url = url.split("/");
-		if (url.length > 2) {
-			addClass = url[1] + "_" + url[2];
-		} else {
-			addClass = url[1];
-		}
-	}
-	
-	res.locals.bodyClass = addClass;
-	
-	next();
-});
+/** bodyClass 처리 */
+app.use(bodyClass); 
+
 
 /** Front 라우터 등록 */
 app.use("/", indexRouter); // 메인페이지 
 app.use("/member", memberRouter); // 회원페이지
 app.use("/board", boardRouter); // 게시판 페이지 
 app.use("/file", fileRouter); // 파일 업로드 페이지
+app.use("/travel", travelRouter); // 여행 페이지
 
 
 

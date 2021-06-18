@@ -1,6 +1,6 @@
 /** admin/travel */
 const { adminOnly } = require('../../middlewares/member_only');
-const { alert, reload } = require('../../lib/common');
+const { alert, reload, getYoils } = require('../../lib/common');
 const travel = require('../../models/travel');
 const express = require('express');
 const router = express.Router();
@@ -31,6 +31,27 @@ router.route("/")
 			
 			// 실패시 
 			return alert('상품등록 실패하였습니다.', res);
+		})
+		/** 상품 삭제 */
+		.delete(async (req, res, next) => {
+			try {
+				let list = req.body.goodsCd;
+				if (!list) {
+					throw new Error("삭제할 상품을 선택하세요.");
+				}
+				
+				if (!(list instanceof Array)) { // goodsCd가 배열이 아니면 -> 배열 객체로 변환
+					list = [list];
+				}
+				
+				list.forEach(async (goodsCd) => {
+					await travel.delete(goodsCd);
+				});
+				
+				return alert("삭제되었습니다.", res, "reload", "parent");
+			} catch (err) {
+				return alert(err.message, res);
+			}
 		});
 
 router.route("/:goodsCd")
@@ -44,6 +65,8 @@ router.route("/:goodsCd")
 				if (!data.goodsCd) {
 					throw new Error('등록된 상품이 아닙니다.');
 				}
+				
+				data._yoils = getYoils(); // 선택 가능 요일 목록
 				
 				data.addScript = ['travel'];
 				
@@ -62,5 +85,27 @@ router.route("/:goodsCd")
 			// 실패 
 			return alert("상품 저장하기 실패 하였습니다.", res);
 		});
-		
+
+/** 패키지 일정 관리 */
+router.route("/package/:goodsCd")
+		/** 일정 등록 양식 */
+		.get(async (req, res, next) => {
+			const goodsCd = req.params.goodsCd;
+			const schedules = await travel.getPackageSchedules(goodsCd);
+			
+			const data = {
+					goodsCd,
+					schedules,
+			};
+			
+			return res.render("admin/travel/package", data);
+		})
+		/** 일정 등록 처리 */
+		.post(async (req, res, next) => {
+			req.body.goodsCd = req.params.goodsCd;
+			const result = await travel.data(req.body).registerPackage();
+						
+			return res.send("");
+		});
+
 module.exports = router;

@@ -3,6 +3,7 @@
 	<head>
 		<meta charset='utf-8'>
 		<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/xeicon@2.3.3/xeicon.min.css">
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 		<link rel="stylesheet" type="text/css" href="/admin/css/style.css">
 		{% if addCss %}
 		{% for css in addCss %}
@@ -13,7 +14,9 @@
 		{% endblock %}
 		<script src='https://unpkg.com/@babel/standalone/babel.min.js'></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="/js/ckeditor/ckeditor.js"></script>
 		<script type='text/babel' src='/js/layer.js'></script>
 		<script type='text/babel' src='/admin/js/common.js'></script>
 		{% if addScript %}
@@ -25,7 +28,7 @@
 		{% endblock %}
 		<title>{% if pageTitle %}{{ pageTitle }} - {% endif %} 사이트 관리자</title>
 	</head>
-	<body{%if bodyClass %} class="body_{{ bodyClass }}"{% endif %}>
+	<body class="{% if bodyClass %}body_{{ bodyClass }}{% endif %}{% if bodyClass2 %} body_{{ bodyClass2 }}{% endif %}">
 	<header>
 	{% block header %}
 	{% include "admin/outline/header/_main.html" %}
