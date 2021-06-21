@@ -87,15 +87,73 @@ router.route("/:goodsCd")
 		});
 
 /** 패키지 일정 관리 */
+router.route("/package")
+		/** 일정 수정 */
+		.patch(async (req, res, next) => {
+			try {
+				
+				if (!req.body.num) {
+					throw new Error("수정할 일정을 선택하세요.");
+				}
+				
+				if (!(req.body.num instanceof Array)) {
+					req.body.num = [req.body.num];
+				}
+				
+				req.body.num.forEach(async (num) => {
+					const data = {
+						period : req.body['period_' + num],
+						addPrice : req.body['addPrice_' + num],
+						minPersons : req.body['minPersons_' + num],
+						maxPersons : req.body['maxPersons_' + num],
+						goodsCd : req.body.goodsCd,
+					};
+		
+					await travel.data(data).updatePackage();
+				});
+				
+				return reload(res, "parent");
+				
+			} catch (err) {
+				return alert(err.message, res);
+			}
+		})
+		/** 일정 삭제 */
+		.delete(async (req, res, next) => {
+			try {
+				if (!req. body.num) {
+					throw new Error('삭제할 일정을 선택하세요.');
+				}
+				
+				if (!(req.body.num instanceof Array)) {  // 단일
+					req.body.num = [req.body.num];
+				}
+				
+				req.body.num.forEach(async (num) => {
+					const period = req.body['period_' + num].split("_");
+					await travel.deletePackage(req.body.goodsCd, period[0], period[1]);
+				});
+				
+				// 삭제 완료시 새로고침
+				return reload(res, "parent");
+			} catch (err) {
+				return alert(err.message, res);
+			}
+			return res.send("");
+		});
+		
 router.route("/package/:goodsCd")
 		/** 일정 등록 양식 */
 		.get(async (req, res, next) => {
 			const goodsCd = req.params.goodsCd;
 			const schedules = await travel.getPackageSchedules(goodsCd);
 			
+			const list = await travel.getPackages(goodsCd); // 등록된 패키지 일정 목록
 			const data = {
 					goodsCd,
 					schedules,
+					list,
+					addScript : ['travel'],
 			};
 			
 			return res.render("admin/travel/package", data);
@@ -104,8 +162,12 @@ router.route("/package/:goodsCd")
 		.post(async (req, res, next) => {
 			req.body.goodsCd = req.params.goodsCd;
 			const result = await travel.data(req.body).registerPackage();
-						
-			return res.send("");
+			if (result) { // 등록 성공 -> 새로고침 
+				return reload(res, "parent");
+			}
+			
+			// 등록 실패 
+			return alert("일정 등록 실패하였습니다.", res);
 		});
 
 module.exports = router;

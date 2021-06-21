@@ -26,6 +26,15 @@ $(function() {
 				console.error(err);
 			});
 	});	
+	
+	/** 패키지 일정 목록 처리 모드 변경 */
+	$("#frmTravelPackages select.mode").change(function() {
+		if ($(this).val() == 'delete') { // 삭제 
+			frmTravelPackages.action = "/admin/travel/package?_method=DELETE";
+		} else { // 수정 
+			frmTravelPackages.action = "/admin/travel/package?_method=PATCH";
+		}
+	});
 });
 
 /**

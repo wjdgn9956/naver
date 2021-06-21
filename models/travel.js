@@ -11,7 +11,7 @@ const fileUpload = require("./file_upload");
 const travel = {
 	/** 처리할 데이터 */
 	params : {},
-	
+		
 	/** 교통편 */
 	transportations : [
 		{ type : 'airline_domestic', name1 : '국내선', name2 : '항공편' },
@@ -151,6 +151,21 @@ const travel = {
 					});
 					data.yoilChecked[i] = isChecked;
 				}
+				
+				// 가능한 최근 패키지 일정 
+				const pack = await this.getPackage(goodsCd);
+				if (pack) {
+					// 판매가 조정 
+					if (pack.addPrice) {
+						data.priceAdult += pack.addPrice;
+						data.priceChild += pack.addPrice;
+					}
+					
+					data.pack = pack;
+				}
+				
+				data.priceAdultStr = Number(data.priceAdult).toLocaleString();
+				data.priceChildStr = Number(data.priceChild).toLocaleString();
 			}
 			
 			return data;
@@ -342,7 +357,8 @@ const travel = {
 	*/
 	registerPackage : async function() {
 		try {
-			const period = this.parrams.period.split("_");
+			const period = this.params.period.split("_");
+						
 			const replacements = {
 				startDate :  new Date(Number(period[0])),
 				endDate : new Date(Number(period[1])),
@@ -353,13 +369,205 @@ const travel = {
 			}
 			
 			const sql = `INSERT INTO travelgoods_package (startDate, endDate, goodsCd, addPrice, minPersons, maxPersons)
-								
-			`;
+									VALUES (:startDate, :endDate, :goodsCd, :addPrice, :minPersons, :maxPersons)`;
+			await sequelize.query(sql, {
+				replacements, 
+				type : QueryTypes.INSERT,
+			});
+			
+			return true;
 		} catch (err) {
 			logger(err, 'error');
 			return false;
 		}
-	}
+	},
+	/**
+	* 패키지 수정 
+	*
+	* @return Boolean 
+	*/ 
+	updatePackage : async function() {
+		try {
+			const dates = this.params.period.split("_");
+			const startDate = new Date(Number(dates[0]));
+			const endDate = new Date(Number(dates[1]));
+			
+			const sql = `UPDATE travelgoods_package 
+									SET 
+										addPrice = :addPrice,
+										minPersons = :minPersons,
+										maxPersons = :maxPersons
+								WHERE 
+										startDate = :startDate AND endDate = :endDate AND goodsCd = :goodsCd`;
+			const replacements = {
+				addPrice : this.params.addPrice || 0,
+				minPersons : this.params.minPersons || 0,
+				maxPersons : this.params.maxPersons || 0,
+				startDate,
+				endDate,
+				goodsCd : this.params.goodsCd,
+			};
+			
+			await sequelize.query(sql, {
+				replacements, 
+				type : QueryTypes.UPDATE,
+			});
+			
+			return true;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 일정 삭제 
+	*
+	* @param String goodsCd 상품코드 
+	* @param String startDate 일정 시작일
+	* @param String endDate 일정 종료일 
+	* 
+	* @return Boolean
+	*/
+	deletePackage : async function(goodsCd, startDate, endDate) {
+		try {
+			if (!goodsCd || !startDate || !endDate) {
+				throw new Error('상품코드, 일정시작일, 일정 종료일은 필수 항목 입니다.');
+			}
+			
+			const sql = "DELETE FROM travelgoods_package WHERE goodsCd = :goodsCd AND startDate = :startDate AND endDate = :endDate";
+			const replacements = {
+				goodsCd, 
+				startDate : new Date(Number(startDate)),
+				endDate : new Date(Number(endDate)),
+			};
+			
+			await sequelize.query(sql, {
+				replacements,
+				type : QueryTypes.DELETE,
+			});
+			
+			return true;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 등록된 패키지 목록 
+	*
+	* @param String goodsCd 상품코드 
+	* @return Array
+	*/
+	getPackages : async function (goodsCd) {
+		try {
+			const sql = `SELECT * FROM travelgoods_package WHERE goodsCd = ? ORDER BY startDate`;
+			const list = await sequelize.query(sql, {
+				replacements : [goodsCd],
+				type : QueryTypes.SELECT,
+			});
+			
+			list.forEach((v, i, _list) => {
+				_list[i].regDt = parseDate(v.regDt).datetime;
+				const sdate = Date.parse(v.startDate + " 00:00:00");
+				const edate = Date.parse(v.endDate + " 00:00:00");
+				_list[i].startDate = parseDate(v.startDate).date;
+				_list[i].endDate = parseDate(v.endDate).date;
+				_list[i].period = `${sdate}_${edate}`;
+			});
+			
+			return list;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 패키지 일정 정보 
+	*
+	* @param String goodsCd 상품코드
+	* @param String starteDate 일정 시작일
+	* @param String endDate 일정 종료일
+	* 
+	* @return Object
+	*/
+	getPackage : async function(goodsCd, startDate, endDate) {
+		try {
+			if (!goodsCd) {
+				throw new Error('상품코드 누락');
+			}
+			
+			const nextDate = new Date(Date.now() + 60 * 60 * 24);
+			
+			startDate = startDate?new Date(startDate):nextDate;
+			const replacements = { goodsCd, startDate };
+			let sql = "SELECT * FROM travelgoods_package WHERE goodsCd = :goodsCd";
+			if (endDate) {
+				replacements.endDate = new Date(endDate);
+				sql += " AND startDate = :startDate AND endDate = :endDate";
+			} else { 
+				sql += " AND startDate >= :startDate";
+			}
+			
+			sql += " LIMIT 1";
+			
+			const rows = await sequelize.query(sql, {
+				replacements,
+				type : QueryTypes.SELECT,
+			});
+			
+			const data = rows[0] || {};
+			if (rows.length > 0) {
+				const sDate = parseDate(data.startDate).date;
+				const eDate = parseDate(data.endDate).date;
+				
+				data.period = `${sDate}~${eDate}`;
+			}
+			
+			return data;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 예약 신청
+	*
+	*/
+	apply : async function() {
+		
+		let transaction;
+		try {
+			/**
+			* travelreservation 
+			*  -> idx -> travelreservation_person 
+			*/
+			transaction = await sequelize.transaction();
+			const period = this.params.period.split("_");
+			
+			let sql = `INSERT INTO travelreservation (memNo, goodsCd, startDate, endDate, name, birth, email, cellPhone)
+								VALUES (:memNo, :goodsCd, :startDate, :endDate, :name, :birth, :email, :cellPhone)`;
+			let replacements = {
+					memNo : this.params.memNo || 0,
+					goodsCd : this.params.goodsCd,
+					startDate : new Date(Number(period[0])),
+					endDate : new Date(Number(period[1])),
+					name : this.params.name,
+					birth : this.params.birth,
+					email : this.params.email,
+					cellPhone : this.params.cellPhone,
+			};
+			const result = await sequelize.query(sql, {
+				replacements,
+				transaction,
+				type : QueryTypes.INSERT,
+			});
+			await transaction.commit();
+		} catch (err) {
+			logger(err.stack, 'error');
+			transaction.rollback();
+			return false;
+		}
+	},
 };
 
 module.exports = travel;

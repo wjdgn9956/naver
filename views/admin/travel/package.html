@@ -30,4 +30,55 @@
 	</table>
 	<input type='submit' value='등록하기' class='submit_btn'>
 </form>
+
+<div class='mtitle'>패키지 일정 목록</div>
+<form id='frmTravelPackages' name='frmTravelPackages' method='post' action='/admin/travel/package?_method=PATCH' target='ifrmHidden' autocomplete='off'>
+	<input type='hidden' name='goodsCd' value='{{ goodsCd }}'>
+	<table class='table_rows'>
+		<thead>
+			<tr>
+				<th width='20'>
+					<input type='checkbox' class='check_all' data-target-name='num'>
+				</th>
+				<th width='250'>여행기간</th>
+				<th width='120'>금액조정</th>
+				<th>최소 / 최대인원</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% if list.length  > 0 %}
+		{% for item in list %}
+			<tr>
+				<td align='center'>
+					<input type='checkbox' name='num' value='{{ loop.index }}'>
+					<input type='hidden' name='period_{{ loop.index }}' value='{{ item.period }}'>
+				</td>
+				<td align='center'>{{ item.startDate }} ~ {{ item.endDate }}</td>
+				<td>
+					<input type='text' name='addPrice_{{ loop.index }}' value='{{ item.addPrice }}'> 
+				</td>
+				<td>
+					<input type='number' name='minPersons_{{ loop.index }}' value='{{ item.minPersons }}'>명
+				    	/ 
+					<input type='number' name='maxPersons_{{ loop.index }}' value='{{ item.maxPersons }}'>명
+				</td>
+			</tr>
+		{% endfor %}
+		{% else %}
+		<tr>
+			<td colspan='4' class='no_schedule'>등록된 일정이 없습니다.</td>
+		</tr>
+		{% endif %}
+		</tbody>
+	</table>
+	{% if list.length >  0 %}
+	<div class='action_box'>
+		<select class='mode'>
+			<option value='update'>수정</option>
+			<option value='delete'>삭제</option>
+		</select>
+		<input type='submit' value='처리하기' class='btn3' onclick="return confirm('정말 처리하시겠습니까?');">
+	</div>
+	{% endif %}
+</form>
 {% endblock %}

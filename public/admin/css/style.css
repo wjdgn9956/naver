@@ -24,6 +24,9 @@ textarea { border: 1px solid #d5d5d5; min-height: 150px; resize: none; border-ra
 .table_cols td { border-bottom: 1px solid #d5d5d5; padding: 7px 10px; }
 .table_cols tr:first-child th, .table_cols tr:first-child td { border-top: 1px solid #d5d5d5; }
 
+.action_box { margin: 10px 0; }
+.action_box select { width: auto; }
+
 .table_rows { border-spacing: 0; padding: 0; width: 100%; }
 .table_rows thead th { background-color: #f8f8f8; padding: 10px; border: 1px solid #d5d5d5; border-left: 0; border-right: 0; }
 .table_rows tbody td { border-bottom: 1px solid #d5d5d5; padding: 10px; }
@@ -40,6 +43,9 @@ textarea { border: 1px solid #d5d5d5; min-height: 150px; resize: none; border-ra
 .submit_btn { background-color: #212121; color: #ffffff; height: 45px; line-height: 45px; cursor: pointer; border-radius: 7px; width: 250px; margin: 20px auto; border: 0; display: block; }
 .btn1, .btn2 { display: inline-block; padding: 5px 15px; background-color: blue; color: #ffffff; border-radius: 5px; font-size: 11px; cursor: pointer; border:0;}
 .btn2 { background-color: red; }
+.btn3 { display: inline-block; height: 40px; padding:0 20px; line-height: 40px; color:#ffffff;
+background-color: blue; border-radius: 5px; font-size:12px; border: 0; cursor: pointer;}
+
 
 @media (max-width:700px) {
     .btn1 { width:80px; margin-bottom: 5px;}
@@ -70,3 +76,7 @@ color:#ffffff; cursor: pointer;}
 
 /** travel/form.html */
 .datepicker { width: 150px !important; }
+
+
+/* travel/package.html */
+.body_admin_travel .table_rows input[type='number'] { width: 60px;}

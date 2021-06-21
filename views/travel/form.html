@@ -1,4 +1,238 @@
 {% extends '../layout.html' %}
 {% block content %}
-예약하기 
+<div class='layout_width'>
+	<div class='main_tit'>예약하기</div>
+	<div class='content_wrap'>
+		<div class='main_contents'>
+		<form name='frmReservation' method='post' action='/travel/reservation/apply' target='ifrmHidden' autocomplete='off'>
+			<input type='hidden' name='goodsCd' value='{{ goodsCd }}'>
+			
+			<div class='sub_tit'>{{ goodsNm }}</div>
+			<table>
+				<tr>
+					<th>여행기간</th>
+					<td>
+						<select name='period'>
+						{% for item in packages %}
+							<option value='{{ item.period }}'>{{ item.startDate }} ~ {{ item.endDate }}</option>
+						{% endfor %}					
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<th>교통편</th>
+					<td>
+						{% if transportation == 'airline_domestic' or transportation == 'airline_inter' %}
+						<i class='xi-airplane'></i>
+						{% elseif transportation == 'ship_domestic' or transportation == 'ship_inter' %}
+						<i class='xi-ship'></i>
+						{% elseif transportation == 'train' %}
+						<i class='xi-train'></i>
+						{% else %}
+						<i class='xi-bus'></i>
+						{% endif %}
+						<span class='text'>
+						{% if transportation == 'airline_domestic' or transportation == 'ship_domestic' %} 
+							국내선
+						{% elseif transportation == 'airline_inter' or transportation == 'ship_inter' %}
+							국제선				
+						{% elseif transportation == 'train' %}
+							기차
+						{% else %}
+							버스
+						{% endif %}
+						</span>
+					</td>
+				</tr>
+			</table>
+			
+			<div class='sub_tit'>예약자 정보</div>
+			<table>
+				<tr>
+					<th>이름</th>
+					<td width='287'>
+						<input type='text' name='name' value='{% if isLogin %}{{ member.memNm }}{% endif %}'>
+					</td>
+					<th>생년월일</th>
+					<td>
+						<input type='number' name='birth' value='' placeholder='입력 예)19901201'>
+					</td>
+				</tr>
+				<tr>
+					<th>이메일</th>
+					<td>
+						<input type='email' name='email' value='{% if isLogin %}{{ member.email }}{% endif %}'>
+					</td>
+					<th>휴대폰번호</th>
+					<td>
+						<input type='text' name='cellPhone' value='{% if isLogin %}{{ member.cellPhone }}{% endif %}'>
+					</td>
+				</tr>
+			</table>
+			
+			<div class='sub_tit'>인원정보</div>
+			<ul class='reservation_persons'>
+				<li class='box adult' data-price='{{ priceAdult }}'>
+					<div class='t1'>
+						<span>성인</span>
+						만 13세 이상 
+					</div>
+					<div class='goods_cnt_wrap'>
+						<i class='cnt_btn down xi-minus-thin'></i>
+						<input type='text' name='goodsCnt_adult' value='{{ adult }}' class='goods_cnt' readonly>
+						<i class='cnt_btn up xi-plus-thin'></i>
+					</div>
+					<div class='tot_price'><span class='no'>{{ totalPriceAdult }}</span>원</div>
+					
+					<!--// goods_cnt_wrap -->
+				</li>
+				
+				<li class='box child' data-price='{{ priceChild }}'>
+					<div class='t1'>
+						<span>아동</span>
+						만 13세 미만
+					</div>
+					<div class='goods_cnt_wrap'>
+						<i class='cnt_btn down xi-minus-thin'></i>
+						<input type='text' name='goodsCnt_child' value='{{ child }}' class='goods_cnt' readonly>
+						<i class='cnt_btn up xi-plus-thin'></i>
+					</div>
+					<div class='tot_price'><span class='no'>{{ totalPriceChild }}</span>원</div>
+					
+					<!--// goods_cnt_wrap -->
+				</li>
+				
+				<li class='box infant'>
+					<div class='t1'>
+						<span>유아</span>
+						만 2세 미만
+					</div>
+					<div class='goods_cnt_wrap'>
+						<i class='cnt_btn down xi-minus-thin'></i>
+						<input type='text' name='goodsCnt_infant' value='{{ infant }}' class='goods_cnt' readonly>
+						<i class='cnt_btn up xi-plus-thin'></i>
+					</div>
+					<div class='tot_price'>-</div>
+					
+					<!--// goods_cnt_wrap -->
+				</li>
+				
+			</ul>
+			
+			<ul class='guide_txt'>
+				<li>※ [+], [-] 버튼으로 인원을 선택하세요.<li>
+				<li>※ 싱글 차지 금액은 예약 이후 추가 될 수 있사오니, 예약 내역 확인 시 상품 결제 정보를 꼭! 확인 하시기 바랍니다.</li>
+			</ul>
+			
+			<div class='sub_tit'>여행자 정보</div>
+			<div id='person_info_html'></div>
+			
+			<div class='reservation_guide'>
+				<div class='tit'><i class='xi-info-o'></i> 예약 시 유의사항</div>
+				<ul>
+					<li>여행 관련 변경사항 발생 시 안내 드리고자 만 19세 이상의 모든 여행자는 휴대폰번호를 필수로 입력하셔야 합니다.</li>
+					<li>
+						휴대폰이 없으실 경우 연락 가능한 보호자의 휴대폰번호를 입력해 주시기 바랍니다.<br>
+						(단, 동일 예약번호 내 동일한 이메일 및 휴대폰번호 입력 불가)
+					<li>
+					<li>
+						하나투어마일리지®는 출발일 전 하나투어클럽에 가입하신 여행자에게만 적립됩니다. (출발일+7일 후 적립)
+					</li>
+					<li>여행자 정보는 예약/결제 후 예약내역에서 모두 입력해 주셔야 합니다.</li>
+					<li>현지합류 인원추가 시 추가 된 인원의 인원 정보를 등록해주셔야 합니다.</li>
+					<li>유아요금은 성인 2인과 같은 방 사용조건이며, 미충족 시 유아추가 요금이 발생합니다.</li>
+					<li>유류할증료 및 제세공과금은 유가와 환율에 따라 변동될 수 있습니다.</li>
+					<li>1인 객실 사용시 추가요금 발생</li>
+					<li>현지합류 상품은 해당 결제금액에 따라 마일리지 적립이 별도로 지급됩니다. (특별적립 제외)</li>
+				</ul>
+			</div>
+		</form>
+		</div>
+		<div class='summary'>
+			<div class='inner'>
+				<div class='sub_tit'>결제상세내역</div>
+				<div class='summary_info'>
+					<dl class='top'>
+						<dt>최종결제금액</dt>
+						<dd>
+							성인 <span class='adult_cnt'>{{ adult }}</span> 
+							아동 <span class='child_cnt'>{{ child }}</span>
+							유아 <span class='infant_cnt'>{{ infant }}</span>
+						</dd>
+					</dl>
+					<div class='total_price'><span class='no'>{{  totalPrice }}</span>원</div>
+					<div class='txt'>유류할증료&amp;제세공과금 포함</div>
+				</div>
+				<!--// summary_info -->
+				<div class='apply_reservation'>예약 신청하기</div>
+			</div>
+			<!--// inner -->
+		</div>
+		<!--// summary -->
+	</div>
+	<!--// content_wrap -->
+</div>
+
+<script type='text/html' id='person_adult_template'>
+	<div class='person_info'>
+		<div class='sub_tit2'><%=tit%></div>
+		<table>
+			<tr>
+				<th>성명(한글)</th>
+				<td colspan='3'>
+					<input type='text' name='travelerNm_<%=personType%>' placeholder='한글성명(ex. 홍길동)'>
+				</td>
+			</tr>
+			<tr>
+				<th>생년월일</th>
+				<td>
+					<input type='number' name='travelerBirth_<%=personType%>' placeholder='법정 생년월일(ex. 19911223)'>
+				</td>
+				<th>성별</th>
+				<td>
+					<select name='travelerGender_<%=personType%>'>
+						<option value='남성'>남성</option>
+						<option value='여성'>여성</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th>휴대폰 번호</th>
+				<td>
+					<input type='text' name='travelerCellPhone_<%=personType%>' placeholder='휴대폰 번호(ex. 01012345678)'>
+				</td>
+				<th>이메일</th>
+				<td>
+					<input type='email' name='travelerEmail_<%=personType%>' placeholder='이메일 주소(ex. HONG@naver.com)'>
+				</td>
+			</tr>
+		</table>
+	</div>
+</script>
+<script type='text/html' id='person_child_template'>
+	<div class='person_info'>
+		<div class='sub_tit2'><%=tit%></div>
+		<table>
+			<tr>
+				<th>성명(한글)</th>
+				<td colspan='3'>
+					<input type='text' name='travelerNm_<%=personType%>' placeholder='한글성명(ex. 홍길동)'>
+				</td>
+			</tr>
+			<tr>
+				<th>생년월일</th>
+				<td>
+					<input type='number' name='travelerBirth_<%=personType%>' placeholder='법정 생년월일(ex. 19911223)'>
+				</td>
+				<th>성별</th>
+				<td>
+					<select name='travelerGender_<%=personType%>'>
+						<option value='남성'>남성</option>
+						<option value='여성'>여성</option>
+					</select>
+				</td>
+			</tr>
+		</table>
+	</div>
+</script>
 {% endblock %}
