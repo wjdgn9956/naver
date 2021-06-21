@@ -1,26 +1,17 @@
 const { alert, go } = require("../lib/common");
+const { reservationApplyValidator, reservationValidator } = require("../middlewares/travel_validator");
 const express = require('express');
 const travel = require('../models/travel');
 const router = express.Router();
 
+
 /** 여행 예약하기 */
 router.route("/reservation")
-		.post(async (req, res, next) => {
+		.post(reservationValidator, async (req, res, next) => {
 			try {
 				goodsCd = req.body.goodsCd;
-				if (!goodsCd) {
-					throw new Error('잘못된 접근입니다.');
-				}
-				
+
 				const data = await travel.get(goodsCd);
-				if (!data.goodsCd) {
-					throw new Error('등록되지 않은 여행 상품입니다.');
-				}
-				
-				if (!data.pack) {
-					throw new Error('마감된 여행상품 입니다.');
-				}
-				
 				data.adult = req.body.goodsCnt_adult || 1;
 				data.child = req.body.goodsCnt_child || 0;
 				data.infant = req.body.goodsCnt_infant || 0;
@@ -42,14 +33,42 @@ router.route("/reservation")
 			}
 		});
 
-router.route("/reservation/apply")
-		/** 여행 예약하기 신청 처리 */
-		.post(async (req, res, next) => {
-			
+			/** 여행 예약하기 신청 처리 */
+router.post("/reservation/apply", reservationApplyValidator, async (req, res, next) => {
+	
 			req.body.memNo = req.session.memNo; 
-			const result = await travel.data(req.body).apply();
+			const idx = await travel.data(req.body).apply();
+			if (idx) { // 예약 신청 성공 -> 예약 신청 완료
+				return go ("/travel/reservation/" + idx, res, "parent");
+			}
 
+			// 예약 신청 실패 
+			return alert("예약신청 실패하였습니다.", res);
 		});
+
+/** 여행 예약 신청 조회 */
+router.route("/reservation/:idx")
+		/** 신청 조회 */
+		.get(async (req, res, next) => {
+
+			try{
+			const idx = req.params.idx;
+			const data = await travel.getApply(idx);
+			if (!data) {
+				throw new Error("접수되지 않은 예약번호입니다.");
+			}
+
+			data.addCss = ['travel'];
+			data.addScript = ['travel'];
+			return res.render("travel/view");
+			} catch(err) {
+				return alert(err.message, rese, -1);
+			}
+		})
+		/** 신청 취소 */
+		.delete((req, res, next) => {
+
+		})
 
 /** 여행 상품 상세 */
 router.route("/:goodsCd")
@@ -60,7 +79,7 @@ router.route("/:goodsCd")
 			
 			data.addCss = ["travel"];
 			data.addScript = ["travel"];
-			console.log(data);
+		
 			return res.render("travel/goods", data);
 		});
 		

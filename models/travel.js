@@ -171,7 +171,7 @@ const travel = {
 			return data;
 		} catch (err) {
 			logger(err.stack, 'error');
-			return {};
+			return false;
 		}
 	},
 	/**
@@ -532,6 +532,7 @@ const travel = {
 	/**
 	* 예약 신청
 	*
+	* return Integer|Boolean 성공한 경우 등록번호(idx), 실패 false
 	*/
 	apply : async function() {
 		
@@ -561,13 +562,76 @@ const travel = {
 				transaction,
 				type : QueryTypes.INSERT,
 			});
+			
+			const idxReservation = result[0];
+			for (const personType of ['adult', 'child', 'infant']) {
+				const cnt = Number(travel.params['goodsCnt_' + personType]);
+				if (cnt == 1) { // 인원수가 1명일때 
+					 travel.params['travelerNm_' + personType] = [travel.params['travelerNm_' + personType]];
+					 travel.params['travelerBirth_' + personType] = [travel.params['travelerBirth_' + personType]];
+					 travel.params['travelerGender_' + personType] = [travel.params['travelerGender_' + personType]];
+					 if (personType == 'adult') {
+						travel.params['travelerCellPhone_' + personType] = [travel.params['travelerCellPhone_' + personType]];
+						travel.params['travelerEmail_' + personType] = [travel.params['travelerEmail_' + personType]];
+					 }
+				}
+				
+				for (let i = 0; i < cnt; i++) {
+					const sql = `INSERT INTO travelreservation_persons (idxReservation, personType, travelerNm, travelerBirth, travelerGender, travelerCellPhone, travelerEmail)
+											VALUES (:idxReservation, :personType, :travelerNm, :travelerBirth, :travelerGender, :travelerCellPhone, :travelerEmail)`;
+					 
+					const replacements = {
+						idxReservation,
+						personType,
+						travelerNm : travel.params['travelerNm_' + personType][i] || "",
+						travelerBirth : travel.params['travelerBirth_' + personType][i] || "",
+						travelerGender : travel.params['travelerGender_' + personType][i] || "",
+						travelerCellPhone : travel.params['travelerCellPhone_' + personType]?travel.params['travelerCellPhone_' + personType][i]:"",
+						travelerEmail : travel.params['travelerEmail_' + personType]? travel.params['travelerEmail_' + personType][i]:"",
+					};
+
+					await sequelize.query(sql, {
+						replacements,
+						transaction,
+						type : QueryTypes.INSERT,
+					});
+				}
+			};
+		
 			await transaction.commit();
+			
+			return idxReservation;
 		} catch (err) {
 			logger(err.stack, 'error');
-			transaction.rollback();
+			await transaction.rollback();
 			return false;
 		}
 	},
-};
+	/**
+	 * 예약 신청 정보 
+	 * 
+	 * @param Integer idx 신청번호 
+	 * @return Object|Boolean 
+	 */
+	getApply : function(idx) {
+		try {
+			let sql = `SELECT a.*, b.memNm, b.memId FROM travlreservation AS a 
+					   LEFT JOIN  member AS b ON a.memNo = b.memNo 
+					   WHERE a.idx = ?`
+			cosnt data = await sequelize.query(sql, {
+				replacements : [idx],
+				type : QueryTypes.SELECT,
+			})
+			
+			const data = rows[0] || {};
+			if (data.idx) {
+				// 여행자 정보 
+				sql = "SELECT * FROM travelreservation_persons WHERE idxReservation = ? ORDER BY regDt";
+			}
+		} catch(err) {
+			logger(err.stack);
+			return false;
+		}
+	},
 
 module.exports = travel;
