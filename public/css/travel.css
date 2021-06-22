@@ -115,3 +115,6 @@
 .travel_goods_list .short_desc { font-size: 14px; line-height: 21px; border-bottom: 0 !important; }
 .travel_goods_list .extra_info { font-size: 14px; color: #111111; margin-bottom: 5px; }
 .travel_goods_list .extra_info i { font-size; 20px; }
+
+
+.print_btn { cursor: pointer; font-size: 16px;}

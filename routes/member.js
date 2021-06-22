@@ -94,6 +94,7 @@ router.get("/login_callback", async (req, res, next) => {
 	}
 });
 
+/** 회원정보 수정 */
 router.route("/update")
 	  .get((req, res, next) => {
 		if (!req.isLogin) {
@@ -106,11 +107,11 @@ router.route("/update")
 		 	try {
 				const result = await member.data(req.body).update();
 				if (result) {
-					return go("/member", res);
+					return go("/mypage", res);
 				}
 			 } catch (err) {
 				 return alert("회원 수정 실패", res);
 			 }
-	  })
+	  });
 
 module.exports = router;

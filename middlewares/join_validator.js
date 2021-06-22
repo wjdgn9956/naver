@@ -42,7 +42,7 @@ module.exports.joinValidator = async (req, res, next) => {
 				1. 자리수  8 ~ 20  - O 
 				2. 알파벳(최소 1자 이상의 대문자 포함) + 1자 이상의 숫자, + 1자 이상의 특수문자
 		*/
-		if (!req.session.naverProfile) {
+		if (!req.session.naverProfile || req.method != 'PATCH' || (req.method =='PATCH' && req.body.memPw )) {
 			const memPw = req.body.memPw;
 			if (memPw && memPw !== req.body.memPwRe) {
 				throw new Error('비밀번호 확인이 일치하지 않습니다.');

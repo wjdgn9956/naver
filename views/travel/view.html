@@ -1,6 +1,10 @@
 {% extends '../layout.html' %}
 {% block content %}
 <div class='layout_width'>
+	<div class='print_btn no_print' onclick="window.print();">
+		<i class='xi-print'></i>
+		예약확인서 인쇄하기
+	</div>
 	<div class='main_tit'>예약확인</div>
 	<form name='frmReservation' method='post' action='/travel/reservation/cancel' target='ifrmHidden' autocomplete='off'>
 	<div class='content_wrap'>

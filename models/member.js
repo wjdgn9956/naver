@@ -122,37 +122,42 @@ const member = {
      */
     update : async function() {
         try {
-            let addSet = "";
-            const data = this.params;
 
-            if (data.memPw) {
-            addset += ", memPw = :memPw";
-            const hash = await bcrypt.hash(data.memPw, 10);
-            replacements.memPw = hash;
-            }
+           const data = this.params;
 
-            
-            const sql = `UPDATE member
-                         SET
-                         memNm = :memNm,
-                         email = :email,
-                         cellPhone = :cellPhone
-                         ${addSet}
-                         address = :address
-                         WHERE
-                             idx = :idx`;
+           const replacements = {
+               email : data.email,
+               cellPhone : data.cellPhone,
+               address : data.address,
+               idx : req.member.idx, 
+           };
 
-            const replacements = {
-                memNm : data.memId,
-                email : data.email,
-                cellPhone : data.cellPhone,
-                address : data.address,
-            }                
-            result = await sequelize.query(sql, {
+           let addSet = "";
+           if (req.body.memPw) {
+               addSet += ", memPw = :memPw";
+               const hash = await bcrypt.hash(req.body.memPw, 10);
+               replacements.memPw = hash;
+           }
+
+           const sql = `UPDATE member
+                        SET
+                        email = :email
+                        cellPhone = :cellPhone,
+                        address = :address
+                        ${addSet}
+                        WHERE
+                          idx = :idx`;
+            const result = await sequelize.query(sql, {
                 replacements,
                 type:QueryTypes.UPDATE,
-            })            
-            return true;     
+            })
+            
+            if (!result) {
+                throw new Error("회원정보 실패");
+            }
+
+            return true;
+
         } catch(err) {
             logger(err.stack, 'error')
             return false;

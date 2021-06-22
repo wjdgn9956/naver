@@ -2,7 +2,10 @@
 
 <!-- 회원 가입, 수정 양식 -->
 {% block content %}
-<form id = "join_form" method='post' action='/member/join' target='ifrmHidden' autocomplete='off'>
+<form id = "join_form" method='post' action="/member/join{{ '?_method=PATCH' if isLogin }}"  target='ifrmHidden' autocomplete='off'>
+	{% if idx %}  
+	<input type="hidden" name ="idx" value ="{{ idx }}">
+	{% endif %} 
 	{% if naverProfile.id %}
 	<h1>네이버 아이디로 회원 가입</h1>
 	{% endif %}
@@ -15,7 +18,7 @@
 		<dt>아이디</dt>
 		{% if isLogin %}  
 		<dd>
-			<input type='text' name='memId' value ="{{ member.memId}}" readonly>
+			<input type='text' name='memId' value ="{{ member.memId}}" >
 		</dd>
 		{% else %}
 		<dd>
