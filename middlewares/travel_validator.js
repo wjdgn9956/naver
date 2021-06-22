@@ -1,43 +1,42 @@
 const { alert, go } = require("../lib/common");
 const travel = require("../models/travel");
+
 /**
 * 여행 관련 유효성 검사 
 */
 
-
 /** 예약접수 페이지 접근 체크 */
-
 module.exports.reservationValidator = async (req, res, next) => {
-     
-    try{
-        /** 로그인 체크 */
-    if (!req.isLogin) {
-        throw new Error ("로그인이 필요한 페이지입니다.");
-     }
-
-    const goodsCd = req.body.goodsCd;
-    if (!goodsCd) {
-        throw new Error('잘못된 접근입니다.');
-    }
-    
-    const data = await travel.get(goodsCd);
-    if (!data.goodsCd) {
-        throw new Error('등록되지 않은 여행 상품입니다.');
-    }
-    
-    if (!data.pack) {
-        throw new Error('마감된 여행상품 입니다.');
-    }
-
-    } catch(err) {
-        return alert(err.message, res, -1);
-    }
-    next();
+		try {
+			/** 로그인 체크 */
+			if (!req.isLogin) {
+				throw new Error("로그인이 필요한 페이지 입니다.");
+			}
+			
+			const goodsCd = req.body.goodsCd;
+			if (!goodsCd) {
+				throw new Error('잘못된 접근입니다.');
+			}
+					
+			const data = await travel.get(goodsCd);
+			if (!data.goodsCd) {
+				throw new Error('등록되지 않은 여행 상품입니다.');
+			}
+					
+			if (!data.pack) {
+				throw new Error('마감된 여행상품 입니다.');
+			}
+			
+			
+			
+		} catch (err) {
+			return alert(err.message, res, -1);
+		}
+	next();
 };
 
 /** 예약 접수 유효성 검사 */
 module.exports.reservationApplyValidator = (req, res, next) => {
-	console.log(req.body);
 	try {
 		/** 예약자 정보 체크 S */
 		const required = {
@@ -96,5 +95,20 @@ module.exports.reservationApplyValidator = (req, res, next) => {
 		return alert(err.message, res);
 	}
 	
+	next();
+};
+
+
+/** 예약 취소시 유효성 검사 */
+module.exports.cancelValidator = async (req, res, next) => {
+	try {
+		const idx = req.params.idx || req.query.idx || req.body.idx;
+		const data = await travel.getApply(idx, req);
+		if (!data.isCancelable) {
+			throw new Error('예약 취소 권한이 없습니다.');
+		}
+	} catch (err) {
+		return alert(err.message, res);
+	}
 	next();
 };

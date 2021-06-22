@@ -94,4 +94,23 @@ router.get("/login_callback", async (req, res, next) => {
 	}
 });
 
+router.route("/update")
+	  .get((req, res, next) => {
+		if (!req.isLogin) {
+			return alert("회원전용 페이지입니다.", res, -1);
+		}
+		res.render("member/form");
+	  })
+
+	  .patch( joinValidator, async(req, res, next) => {
+		 	try {
+				const result = await member.data(req.body).update();
+				if (result) {
+					return go("/member", res);
+				}
+			 } catch (err) {
+				 return alert("회원 수정 실패", res);
+			 }
+	  })
+
 module.exports = router;

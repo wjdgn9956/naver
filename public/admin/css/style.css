@@ -37,6 +37,12 @@ textarea { border: 1px solid #d5d5d5; min-height: 150px; resize: none; border-ra
 /** 레이아웃 */
 #main_wrap { padding: 15px 10px; }
 
+/** 페이징 */
+.paginator { text-align: center; padding: 20px 0; }
+.paginator a { padding: 5px 10px; border: 1px solid #212121; font-size: 11px; border-radius: 3px; margin: 0 2px; }
+.paginator a.paginator-current { background-color: #212121; color: #ffffff; }
+
+
 
 
 /** 버튼 */

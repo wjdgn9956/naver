@@ -1,0 +1,38 @@
+{% extends '../layout.html' %}
+{% block content %}
+<div class='layout_width'>
+<ul class='travel_goods_list'>
+{% if list.length > 0 %}
+{% for item in list %}
+	<li>
+		<a href='/travel/{{ item.goodsCd }}'>
+			{% if item.listImages.length > 0 %}
+			<div class='images' style="background:url('{{ item.listImages[0].fileUrl }}') no-repeat center center; background-size: cover">
+			</div>
+			{% endif %}
+			<div class='goods_info'>
+				<span class='price'>
+					<span class='no'>{{ item.priceAdultStr }}</span>원~
+				</span>
+				<div class='list_goods_nm'>{{ item.goodsNm }}</div>
+				{% if item.shortDescription %}
+				<div class='short_desc'>{{ item.shortDescription }}</div>
+				{% endif %}
+				<div class='extra_info'>
+					<i class='xi-maker'></i> {{ item.city }}
+				</div>
+				<div class='extra_info'>
+					<i class='xi-calendar'></i>
+					{{ item.itinerary }}일
+				</div>
+			</div>
+		</a>
+	</li>
+{% endfor %}
+{% else %}
+	<li class='no_goods'>등록된 상품이 없습니다.</div>
+{% endif %}
+</ul>
+{{ pagination | safe }}
+</div>
+{% endblock %}

@@ -1,5 +1,82 @@
-{% extends "../layout.html" %}  
+{% extends '../layout.html' %}
+{% block content %}
+<div class='mtitle'>예약검색</div>
+<form method='get' action='?'>
+	<table class='table_cols'>
+		<tr>
+			<th>예약상태</th>
+			<td width='180'>
+				<select name='status'>
+					<option value=''>- 전체 목록 -</option>
+				{% for _status in statusList %}
+					<option value='{{ _status }}'{% if status == _status %} selected{% endif %}>{{ _status }}</option>
+				{% endfor %}
+				</select>
+			</td>
+			<th>키워드</th>
+			<td>
+				<input type='text' name='skey' value='{{ skey }}'>
+			</td>
+		</tr>
+	</table>
+	<input type='submit' value='검색하기' class='submit_btn'>	
+</form>
 
-{% block content %}  
-예약페이지
-{% endblock %}  
+<div class='mtitle'>예약 목록</div>
+<form method='post' action='/admin/reservation' target='ifrmHidden' autocomplete='off'>
+	<table class='table_rows'>
+		<thead>
+			<tr>
+				<th width='20'>
+					<input type='checkbox' class='check_all' data-target-name='idx'>
+				</th>
+				<th width='140'>예약상태</th>
+				<th width='120'>예약자</th>
+				<th width='170'>예약자 연락처</th>
+				<th width='350'>여행상품</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for item in list %}
+			<tr>
+				<td align='center'>
+					<input type='checkbox' name='idx' value='{{ item.idx }}'>
+				</td>
+				<td align='center'>
+					<select name='status_{{ item.idx }}'>
+						{% for _status in statusList %}
+						<option value='{{ _status }}'{% if item.status == _status %} selected{% endif %}>{{ _status }}</option>
+						{% endfor %}
+					</select>
+				</td>
+				<td align='center'>
+					{{ item.name }}<br>
+					{% if item.memId %}({{ item.memId }}){% endif %}
+				</td>
+				<td align='center'>
+					{{ item.cellPhone }}<br>
+					{{ item.email }}
+				</td>
+				<td>
+					<a href='/admin/travel/{{ item.goodsCd }}' target='_blank'>{{ item.goodsNm }}</a>
+					<br>
+					{{ item.startDate }}~{{ item.endDate }}
+				</td>
+				<td>
+					<a href='/travel/reservation/{{ item.idx }}' target='_blank' class='btn1'>예약내용 자세히보기</a>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	<div class='action_box'>
+		<select name='mode'>
+			<option value='update'>수정</option>
+			<option value='delete'>삭제</option>
+		</select>
+		<input type='submit' value='처리하기' class='btn3' onclick="return confirm('정말 처리하시겠습니까?');">
+	</div>
+</form>
+{{ pagination | safe }}
+{% endblock %}

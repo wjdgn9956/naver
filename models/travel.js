@@ -22,6 +22,9 @@ const travel = {
 		{ type : 'bus', name1 : '버스', name2 : '' },
 	],
 	
+	/** 예약 상태 */
+	status : ['접수완료', '예약확정', '예약취소'],
+	
 	/**
 	* 처리할 데이터 설정
 	*
@@ -183,13 +186,17 @@ const travel = {
 	* 
 	* @return Object
 	*/
-	getGoods : async function(page, limit, qs) {
+	getGoods : async function(page, limit, qs, isFront) {
 		try {
 			page = page || 1;
 			limit = limit || 20;
 			const offset = (page - 1) * limit;
 			
 			let prelink = "/admin/travel";
+			
+			let addWhere = "";
+			const _addWhere = [];
+			const replacements = {};
 			if (qs) {
 				const addQuery = [];
 				for (key in qs) {
@@ -201,8 +208,18 @@ const travel = {
 				prelink += "?" + addQuery.join("&");
 			}
 			
-			const replacements = {};
-			let sql = `SELECT COUNT(*) as cnt FROM travelgoods`;
+			/** 추가 검색 처리 S */
+			if (isFront) {
+				const endStamp = Date.now() + (60 * 60 * 24 * 1000);
+				_addWhere.push("endDate >= :endDate");
+				replacements.endDate = new Date(endStamp);
+			}
+			if (_addWhere.length > 0) {
+				addWhere = " WHERE " + _addWhere.join(" AND ");
+			}
+			/** 추가 검색 처리 E */
+			
+			let sql = `SELECT COUNT(*) as cnt FROM travelgoods${addWhere}`;
 			const rows = await sequelize.query(sql, {
 				replacements,
 				type : QueryTypes.SELECT,
@@ -214,16 +231,20 @@ const travel = {
 			replacements.offset = offset;
 			replacements.limit = limit;
 			
-			sql = `SELECT * FROM travelgoods ORDER BY regDt DESC LIMIT :offset, :limit`;
+			sql = `SELECT * FROM travelgoods${addWhere} ORDER BY regDt DESC LIMIT :offset, :limit`;
 			const list = await sequelize.query(sql, {
 				replacements, 
 				type : QueryTypes.SELECT,
 			});
 			
-			list.forEach((v, i, _list) => {
-				_list[i].regDt = parseDate(v.regDt).datetime;
-			});
-			
+			for (let i = 0; i < list.length; i++) {
+				list[i].regDt = parseDate(list[i].regDt).datetime;
+				list[i].priceAdultStr = list[i].priceAdult.toLocaleString();
+				
+				/** 목록 이미지 */
+				list[i].listImages = await travel.getImages(list[i].goodsCd, 'list');
+			}
+
 			const data = { 
 				totalResult, 
 				list, 
@@ -608,30 +629,279 @@ const travel = {
 		}
 	},
 	/**
-	 * 예약 신청 정보 
-	 * 
-	 * @param Integer idx 신청번호 
-	 * @return Object|Boolean 
-	 */
-	getApply : function(idx) {
+	* 예약 신청 정보 
+	*
+	* @param Integer idx 신청번호 
+	* @return Object|Boolean
+	*/
+	getApply : async function(idx, req) {
 		try {
-			let sql = `SELECT a.*, b.memNm, b.memId FROM travlreservation AS a 
-					   LEFT JOIN  member AS b ON a.memNo = b.memNo 
-					   WHERE a.idx = ?`
-			cosnt data = await sequelize.query(sql, {
+			let sql = `SELECT a.*, b.memNm, b.memId, c.goodsNm, c.transportation, c.priceAdult, c.priceChild FROM travelreservation AS a 
+									LEFT JOIN member AS b ON a.memNo = b.memNo 
+									LEFT JOIN travelgoods AS c ON a.goodsCd = c.goodsCd 
+							WHERE a.idx = ?`;
+			const rows = await sequelize.query(sql, {
 				replacements : [idx],
 				type : QueryTypes.SELECT,
-			})
+			});
 			
 			const data = rows[0] || {};
-			if (data.idx) {
+			if (rows.length > 0) {
+				/** 여행 기간 S */
+				const sDate = parseDate(data.startDate).date;
+				const eDate = parseDate(data.endDate).date;
+				data.period = `${sDate} ~ ${eDate}`;
+				/** 여행 기간 E */
+				
+				data.regDt = parseDate(data.regDt).datetime;
+				
 				// 여행자 정보 
 				sql = "SELECT * FROM travelreservation_persons WHERE idxReservation = ? ORDER BY regDt";
+				const rows = await sequelize.query(sql, {
+					replacements : [idx],
+					type : QueryTypes.SELECT,
+				});
+				
+				const list = {
+					adult : [],
+					child : [],
+					infant : [],
+				};
+				rows.forEach((row) => {
+					list[row.personType].push(row);
+				});
+				data.persons = list;
+				
+				/** 패키지 정보 */
+				const pack = await this.getPackage(data.goodsCd, data.startDate + " 00:00:00", data.endDate + " 00:00:00");
+				data.adult = list.adult.length;
+				data.child = list.child.length;
+				data.infant = list.infant.length;
+				if (pack) {
+					data.priceAdult = Number(data.priceAdult) + Number(pack.addPrice);
+					data.priceChild = Number(data.priceChild) + Number(pack.addPrice);	
+				}
+				data.totalPrice = 0;
+				data.totalPriceAdult = data.priceAdult * data.adult;
+				data.totalPrice += data.totalPriceAdult;
+				
+				data.totalPriceAdult = data.totalPriceAdult.toLocaleString();
+				
+				data.totalPriceChild = data.priceChild * data.child;
+				data.totalPrice += data.totalPriceChild;
+				
+				data.totalPriceChild = data.totalPriceChild.toLocaleString();
+				
+				data.totalPrice = data.totalPrice.toLocaleString();
+				data.personTypes = ['adult', 'child', 'infant'];
+				
+				data.isCancelable = false; // 취소 가능 여부
+				if (req && req.isLogin && data.status == '접수완료') {
+					const startStamp = Date.parse(data.startDate + " 00:00:00");
+					// 예약 회원번호로 로그인한 회원의 회원번호가 일치하고 여행 시작일 보다 이전일때 취소 가능
+					if (data.memNo == req.session.memNo && startStamp > Date.now() ) {
+						data.isCancelable = true;
+					}
+				}
 			}
-		} catch(err) {
-			logger(err.stack);
+			
+			return data;
+		} catch (err) {
+			logger(err.stack, 'error');
 			return false;
 		}
 	},
+	/**
+	* 예약 취소 
+	*
+	* @param Integer idx 신청번호
+	* @return Boolean 
+	*/
+	cancel : async function(idx) {
+		try {
+			const sql = `UPDATE travelreservation
+									SET 
+										status = '예약취소' 
+								WHERE 
+									idx = ?`;
+			await sequelize.query(sql, {
+				replacements : [idx],
+				type : QueryTypes.UPDATE,
+			});
+			
+			return true;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 예약 신청 목록 
+	*
+	* @param Integer page 페이지 번호
+	* @param Integer limit 1페이지당 레코드 수, 기본값은 20
+	* @param Object qs 쿼리스트링
+	* @param Integer memNo 회원번호 
+	* 
+	* @return Object
+	*/
+	getReservations : async function(page, limit, qs, memNo) {
+		try {
+			page = page || 1;
+			limit = limit || 20;
+			const offset = (page - 1) * limit;
+			
+			const replacements = {};
+			let addWhere = "";
+			const _addWhere = [];
+			
+			let prelink = "/admin/reservation";
+			if (qs) {
+				const addQuery = [];
+				for (key in qs) {
+					if (key == 'page') continue;
+					
+					addQuery.push(`${key}=${qs[key]}`);
+				}
+				
+				prelink += "?" + addQuery.join("&");
+				
+				/** 추가 검색 조건 처리 */
+				
+				/** 예약 상태  */
+				if (qs.status) {
+					_addWhere.push("a.status = :status");
+					replacements.status = qs.status;
+				}
+				
+				/** 키워드 검색 */
+				if (qs.skey) {
+					const col = "(CONCAT(a.name, REPLACE(a.cellPhone, '-', ''), a.email, c.goodsNm, c.goodsCd) LIKE :skey OR b.memId LIKE :skey)";
+					_addWhere.push(col);
+					replacements.skey = "%" + qs.skey + "%";
+				}
+			}
+			
+			/** 회원 번호 처리 - 마이페이지 */
+			if (memNo) {
+				_addWhere.push("b.memNo = :memNo");
+				replacements.memNo = memNo;
+			}
+			
+			if (_addWhere.length > 0) {
+				addWhere = " WHERE " + _addWhere.join(" AND ");
+			}
+			
+			
+			let sql = `SELECT COUNT(*) as cnt FROM travelreservation AS a 
+								LEFT JOIN member AS b ON a.memNo = b.memNo 
+								LEFT JOIN travelgoods AS c ON a.goodsCd = c.goodsCd${addWhere}`;
+			const rows = await sequelize.query(sql, {
+				replacements,
+				type : QueryTypes.SELECT,
+			});
+			
+			const totalResult = rows[0].cnt;
+			const paginator = pagination.create('search', {prelink, current: page, rowsPerPage: limit, totalResult });
+			
+			replacements.limit = limit;
+			replacements.offset = offset;
+			sql = `SELECT a.*, b.memId, b.memNm, c.goodsNm FROM travelreservation AS a 
+								LEFT JOIN member AS b ON a.memNo = b.memNo 
+								LEFT JOIN travelgoods AS c ON a.goodsCd = c.goodsCd${addWhere} ORDER BY a.regDt DESC LIMIT :offset, :limit `;
+			
+			const list = await sequelize.query(sql, {
+				replacements,
+				type : QueryTypes.SELECT,
+			});
+			
+			list.forEach((v, i, _list) => {
+				_list[i].regDt = parseDate(v.regDt).datetime;
+			});
+			
+			const data = {
+				pagination : paginator.render(),
+				page,
+				offset,
+				limit,
+				totalResult,
+				list,
+			};
+			
+			return data;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 예약 상태 변경 
+	*
+	* @param Integer idx 예약 등록 번호
+	* @param String status 등록 상태 
+	* 
+	* @return Boolean
+	*/
+	changeStatus : async function(idx, status) {
+		try {
+			if (!idx || !status) {
+				throw new Error('예약등록번호, 등록상태는 필수 인수');
+			}
+			
+			const sql = `UPDATE travelreservation
+									SET 
+										status = :status 
+								WHERE 
+									idx = :idx`;
+			const replacements = { idx, status };
+			await sequelize.query(sql, {
+				replacements,
+				type : QueryTypes.UPDATE,
+			});
+			
+			return true;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return false;
+		}
+	},
+	/**
+	* 예약 삭제 
+	*
+	* @param Integer idx 예약 등록번호
+	* @return Boolean
+	*/
+	deleteReservation : async function(idx) {
+		let transaction;
+		try {
+			if (!idx) {
+				throw new Error('예약등록 번호는 필수 인수');
+			}
+			transaction = await sequelize.transaction();
+		
+			let sql = "DELETE FROM travelreservation_persons WHERE idxReservation = ?";
+			await sequelize.query(sql, {
+				replacements : [idx],
+				transaction,
+				type : QueryTypes.DELETE,
+			});
+			
+			sql = "DELETE FROM travelreservation WHERE idx = ?";
+			await sequelize.query(sql, {
+				replacements : [idx],
+				transaction,
+				type : QueryTypes.DELETE,
+			});
+			
+			await transaction.commit();
+			
+			return true;
+		} catch (err) {
+			logger(err.stack, 'error');
+			await transaction.rollback();
+			return false;
+		}
+	},
+};
 
 module.exports = travel;

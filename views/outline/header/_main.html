@@ -2,14 +2,13 @@
     <div class="box logo">
        <a href="/"><i class ="xi-hotel"></i> YOON'S TOUR</i></a>
     </div>
-      
       <div class="box info">
    {% if isLogin %} 
    {{ member.memId}}님 로그인..
     
    <a href="/admin">관리자 메뉴</a>
    <a href="/board"><i class="xi-paper-o"></i>게시판</a>      
-   <a href="/member/mypage"><i class ="xi-home"></i>마이페이지</a>
+   <a href="/mypage"><i class ="xi-home"></i>마이페이지</a>
    <a href="/member/logout"><i class ="xi-log-out"></i>로그아웃</a>
    {% else %}
    <a href="/board"><i class="xi-paper-o"></i>게시판</a>
