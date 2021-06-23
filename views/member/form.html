@@ -2,31 +2,26 @@
 
 <!-- 회원 가입, 수정 양식 -->
 {% block content %}
-<form id = "join_form" method='post' action="/member/join{{ '?_method=PATCH' if isLogin }}"  target='ifrmHidden' autocomplete='off'>
-	{% if idx %}  
-	<input type="hidden" name ="idx" value ="{{ idx }}">
-	{% endif %} 
-	{% if naverProfile.id %}
-	<h1>네이버 아이디로 회원 가입</h1>
-	{% endif %}
+<form id ="join_form" method='post' action="{{ '/mypage/myinfo' if isLogin else '/member/join' }}" target='ifrmHidden' autocomplete='off'>
 	{% if isLogin %} 
 	<h1>Edit profile</h1>
 	{% else %}
 	<h1>JOIN</h1>
+	{% endif %} 
+	{% if naverProfile.id %}
+	<h1>네이버 아이디로 회원 가입</h1>
 	{% endif %}
 	<dl>
 		<dt>아이디</dt>
-		{% if isLogin %}  
 		<dd>
-			<input type='text' name='memId' value ="{{ member.memId}}" >
-		</dd>
-		{% else %}
-		<dd>
+			{% if isLogin %}
+			{{ member.memId }}
+			{% else %}
 			<input type='text' name='memId'>
+			{% endif %}
 		</dd>
-		{% endif %}
 	</dl>
-    {% if not naverProfile.id %}  
+	{% if not isPasswordNotChange %}
 	<dl>
 		<dt>비밀번호</dt>
 		<dd>
@@ -39,7 +34,13 @@
 			<input type='password' name='memPwRe'>
 		</dd>
 	</dl>
-    {% endif %}  
+	<dl>
+		<dt>비밀번호 찾기 힌트</dt>
+		<dd>
+			<input type="text" name ="pwHint" value ="{{ member.pwHint }}">
+		</dd>
+	</dl>
+	{% endif %}
 	<dl>
 		<dt>회원명</dt>
 		<dd>
@@ -55,15 +56,9 @@
 	<dl>
 		<dt>휴대전화번호</dt>
 		<dd>
-			<input type='text' name='cellPhone' value="{{ member.cellPhone }}">
+			<input type='text' name='cellPhone' value='{{ member.cellPhone }}'>
 		</dd>
 	</dl>
-	<dl>
-        <dt>주소</dt>
-        <dd>
-            <input type="text" name ="address" class="address" value = "{{ member.address }}" readonly>
-        </dd>
-    </dl>
-	<input type='submit' value="{{ '회원정보 수정' if isLogin else '회원가입' }}" class="submit_btn">
+	<input type='submit' value="{{ '정보수정' if isLogin else '회원가입' }}" class ="submit_btn">
 </form>
 {% endblock %}

@@ -207,14 +207,21 @@ const board = {
 	*/
 	write : async function() {
 		try {
-			const sql = `INSERT INTO boarddata (gid, boardId, category, memNo, poster, subject, contents, password) 
-										VALUES (:gid, :boardId, :category, :memNo, :poster, :subject, :contents, :password)`;
+			const sql = `INSERT INTO boarddata (gid, boardId, category, memNo, poster, subject, contents, password, isImagePost) 
+										VALUES (:gid, :boardId, :category, :memNo, :poster, :subject, :contents, :password, :isImagePost)`;
 			
 			
 			const memNo = this.session.memNo || 0;
 			let hash = "";
 			if (!memNo && this.params.password) { // 비회원인 경우는 비밀번호 해시 처리 
 				hash = await bcrypt.hash(this.params.password, 10);
+			}
+			
+			// 이미지 포함 게시글인지 체크 
+			let isImagePost = 0;
+			const pattern = /<img[^>]*src/igm;
+			if (pattern.test(this.params.contents)) {
+				isImagePost = 1;
 			}
 			
 			const replacements = {
@@ -226,13 +233,14 @@ const board = {
 				subject : this.params.subject,
 				contents : this.params.contents,
 				password : hash,
+				isImagePost,
 			};		
 
 			const result = await sequelize.query(sql, {
 				replacements,
 				type : QueryTypes.INSERT,
 			});
-			
+						
 			return result[0]; // 게시글 등록 번호(idx)
 		} catch (err) {
 			logger(err.stack, 'error');
@@ -252,7 +260,13 @@ const board = {
 				hash = await bcrypt.hash(this.params.password, 10);
 			}
 		
-			
+			// 이미지 포함 게시글인지 체크 
+			let isImagePost = 0;
+			const pattern = /<img[^>]*src/igm;
+			if (pattern.test(this.params.contents)) {
+				isImagePost = 1;
+			}
+		
 			const sql = `UPDATE boarddata 
 									SET 
 										category = :category,
@@ -260,15 +274,17 @@ const board = {
 										subject = :subject,
 										contents = :contents,
 										password = :password,
+										isImagePost = :isImagePost,
 										modDt = :modDt
 									WHERE 
 										idx = :idx`;
 			const replacements = {
-					category : this.params.category,
+					category : this.params.category || "",
 					poster : this.params.poster,
 					subject : this.params.subject,
 					contents : this.params.contents,
 					password : hash,
+					isImagePost,
 					modDt : new Date(),
 					idx : this.params.idx,
 			};
@@ -437,13 +453,23 @@ const board = {
 			if (registerStamp > stamp) { // 현재 등록된 게시글이 하루 동안 작성된 경우 -> 새글 
 				_list[i].isNew = true;
 			}
-			
-			_list[i].regDt = parseDate(v.regDt).datetime;
+			const date = parseDate(v.regDt);
+			_list[i].regDt = date.datetime;
+			_list[i].regDtS = date.date;
 			
 			/** 조회수 처리 */
 			_list[i].viewCountStr = v.viewCount.toLocaleString();
+			
+			/** 본문에 포함된 이미지 추출 */
+			const pattern = /<img[^>]*src=['"]?([^>'"]+)['"]?[^>]*>/igm
+			const match = pattern.exec(v.contents);
+			if (match && match.length > 0) {
+				_list[i].listImage = match[1];
+			}
+			
+			_list[i].listImage = _list[i].listImage || "/img/no_image.jpg";
 		});
-
+		
 		const result = {
 			pagination : paginator.render(),
 			list,
@@ -769,7 +795,74 @@ const board = {
 			logger(err.stack, 'error');
 			return false;
 		}
-	}
+	},
+	/**
+	* 최신글
+	*
+	* @param String boardId 게시판 아이디 
+	* @param String category 게시판 분류
+	* @param Integer limit 추출할 레코드 수, 기본값은 10
+	* @param Boolean isImagePost - true(이미지가 포함된 게시글), false - 전체 
+	*
+	* @return Array
+	*/
+	getLatest : async function(boardId, category, limit, isImagePost) {
+		try {
+			if (!boardId) {
+				throw new Error('게시판 아이디 누락');
+			}
+			
+			limit = limit || 10;
+			
+			let addWhere = "";
+			const _addWhere = [];
+			const replacements = {
+					boardId,
+					limit,
+			};
+			
+			if (category) {
+				_addWhere.push("a.category = :category");
+				replacements.category = category;
+			}
+			
+			if (isImagePost) {
+				_addWhere.push("a.isImagePost = 1");
+			}
+			
+			if (_addWhere.length > 0) {
+				addWhere = " AND " + _addWhere.join(" AND ");
+			}
+			
+			const sql = `SELECT a.*, b.memId, b.memNm FROM boarddata AS a 
+									LEFT JOIN member AS b ON a.memNo = b.memNo 
+								WHERE boardId = :boardId${addWhere} ORDER BY a.regDt DESC LIMIT :limit `;
+			
+			const list = await sequelize.query(sql, {
+				replacements,
+				type : QueryTypes.SELECT,
+			});
+			
+			list.forEach((v, i, _list) => {
+				const date = parseDate(v.regDt);
+				_list[i].regDt = date.datetime;
+				_list[i].regDtS = date.date;
+				
+				const pattern = /<img[^>]*src=['"]?([^>'"]+)['"]?[^>]*>/igm;
+				const match = pattern.exec(v.contents);
+				if (match && match.length > 0) {
+					_list[i].listImage = match[1];
+				} else {
+					_list[i].listImage = "/img/no_image.jpg";
+				}
+			});
+			
+			return list;
+		} catch (err) {
+			logger(err.stack, 'error');
+			return [];
+		}
+	},
 };
 
 module.exports = board;

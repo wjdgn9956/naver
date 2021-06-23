@@ -1,0 +1,21 @@
+
+<!-- 최신 이미지 게시글 -->
+{% if tmp.length > 0 %}
+
+<ul class ="mainboard_image layout_width">
+	<h2>동남아시아 여행후기 게시판</h2>
+	{% for item in tmp %}
+	<li>
+		<a href='/board/view/{{ item.idx }}'>
+			<img src='{{ item.listImage }}'>
+			<div class='title'>{{ item.subject }}</div>
+		</a>
+		
+		<span class='poster'>{{ item.poster }}</span>
+		<span class='date'>{{ item.regDtS }}</span>
+		<span class='hit'>{{ item.hit }}</span>
+	</li>
+	{% endfor %}
+</ul>
+
+{% endif %}
