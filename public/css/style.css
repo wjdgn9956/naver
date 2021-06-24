@@ -169,5 +169,8 @@ font-size: 20px;}
     overflow: hidden; word-break: break-all; margin-bottom: 10px;}
 .mainboard_image .main_title { margin: 0 auto; margin-top: 50px; font-size: 16px; border:1px solid black;
 background-color:white; color:black; width: 230px; text-align: center; height: 40px; line-height: 38px; 
-border-radius: 5px;}
+border-radius: 5px; cursor: pointer;}
 .mainboard_image .main_title:hover{ background-color: black; color:white;}    
+.mainboard_image .bar { width: 40px; height: 1px; background-color: black; margin:20px auto; transition: 1s;}
+.mainboard_image .main:hover .bar { width:120px;}
+.mainboard_image .main  { text-align: center; font-size: 16px; width: 300px; margin:0 auto;}

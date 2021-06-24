@@ -3,7 +3,11 @@
 {% if tmp.length > 0 %}
 
 <ul class ="mainboard_image layout_width">
+	<div class="main">
 	<div class ="main_title">동남아시아 여행후기 게시판</div>
+	<div class="bar"></div>
+	<a href="/board">다른 여행 게시판 보러가기</a>
+	</div>
 	{% for item in tmp %}
 	<li>
 		<a href='/board/view/{{ item.idx }}'>
