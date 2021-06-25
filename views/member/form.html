@@ -59,6 +59,12 @@
 			<input type='text' name='cellPhone' value='{{ member.cellPhone }}'>
 		</dd>
 	</dl>
+	<dl>
+		<dt>주소</dt>
+		<dd>
+			<input type='text' name='address' class="address" value='{{ member.address }}'>
+		</dd>
+	</dl>
 	<input type='submit' value="{{ '정보수정' if isLogin else '회원가입' }}" class ="submit_btn">
 </form>
 {% endblock %}
